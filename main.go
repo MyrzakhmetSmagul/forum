@@ -32,11 +32,19 @@ func main() {
 	log.Println("localhost:8080")
 	database, err := sql.Open("sqlite3", "forum.db")
 	log.Println(err)
-	// statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS users (user_id INTEGER NOT NULL PRIMARY KEY, user_name TEXT NOT NULL, user_surname TEXT NOT NULL, user_gender TEXT NOT NULL, user_email TEXT, user_pwd TEXT NOT NULL)")
-	// log.Println(err)
-	// statement.Exec()
-	rows, err := database.Query("SELECT * FROM users")
+
+	createTable(database)
 	var u User
+
+	addUser(database, &User{
+		Id:      1,
+		Name:    "Myrzakhmet",
+		Surname: "Smagul",
+		Gender:  "MALE",
+		Email:   "smagul.myrzakhmet@mail.ru",
+		Pwd:     "kcnd;lksm",
+	})
+	rows, err := database.Query("SELECT * FROM users")
 	log.Println(err)
 	for rows.Next() {
 		rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Gender, &u.Email, &u.Pwd)
@@ -48,6 +56,34 @@ func main() {
 }
 
 func createTable(db *sql.DB) {
+	users_table := `CREATE TABLE IF NOT EXISTS users (
+		user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+		name TEXT NOT NULL, 
+		surname TEXT NOT NULL, 
+		gender TEXT NOT NULL, 
+		email TEXT, 
+		pwd TEXT NOT NULL)`
+	query, err := db.Prepare(users_table)
+	if err != nil {
+		log.Fatal(err)
+	}
+	query.Exec()
+	log.Println("Table was created")
+}
+
+func addUser(db *sql.DB, u *User) {
+	record := `INSERT INTO 	users(name, surname, gender, email, pwd) VALUES(?, ?, ?, ?, ?)`
+	query, err := db.Prepare(record)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = query.Exec(u.Name, u.Surname, u.Gender, u.Email, u.Pwd)
+	if err != nil {
+		log.Fatal()
+	}
+
+	log.Println("INSERT INTO OK")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
