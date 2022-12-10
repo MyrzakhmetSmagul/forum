@@ -1,8 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Hello</title>
-</head>
-<body>
-</body>
-</html> 
+{{ define "index" }}
+
+{{ template "header" }}
+<div class="records">
+
+    {{ range . := . }}
+    
+    <div class="article">
+        
+    </div>
+    
+    {{ end }}
+
+</div>
+
+{{ template "footer"}}
+
+{{ end }}
