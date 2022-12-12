@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -36,14 +37,13 @@ func main() {
 	createTable(database)
 	var u User
 
-	addUser(database, &User{
-		Id:      1,
-		Name:    "Myrzakhmet",
-		Surname: "Smagul",
-		Gender:  "MALE",
-		Email:   "smagul.myrzakhmet@mail.ru",
-		Pwd:     "kcnd;lksm",
-	})
+	// addUser(database, &User{
+	// 	Name:    "Tursynkhan",
+	// 	Surname: "Tursunov",
+	// 	Gender:  "MALE",
+	// 	Email:   "Tursynkhan@mail.ru",
+	// 	Pwd:     "hdfuivhishokv",
+	// })
 	rows, err := database.Query("SELECT * FROM users")
 	log.Println(err)
 	for rows.Next() {
@@ -87,10 +87,18 @@ func addUser(db *sql.DB, u *User) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello")
-	for _, v := range Users {
-		fmt.Fprintf(w, "info")
-		fmt.Fprintf(w, v.UserInfo())
+	if r.URL.Path != "/" {
+		log.Println(r.URL.Path)
+		http.NotFound(w, r)
+		return
 	}
-	fmt.Fprintf(w, "bye")
+
+	temp, err := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, "Internal Server Error!")
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "index", nil)
 }

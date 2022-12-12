@@ -1,16 +1,20 @@
 {{ define "index" }}
 
 {{ template "header" }}
-<div class="records">
 
-    {{ range . := . }}
-    
-    <div class="article">
-        
-    </div>
-    
-    {{ end }}
 
+<div class="auth">
+    <form>
+        <table>
+            <tr>
+                <td>Name</td>
+            </tr>
+            <tr>
+                <td><input type="text" placeholder="Adam"></td>
+            </tr>
+        </table>
+        <input type="submit">
+    </form>
 </div>
 
 {{ template "footer"}}
