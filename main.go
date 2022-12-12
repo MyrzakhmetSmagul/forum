@@ -29,7 +29,6 @@ func (u *User) UserInfo() string {
 var Users []User
 
 func main() {
-	http.HandleFunc("/", indexHandler)
 	log.Println("localhost:8080")
 	database, err := sql.Open("sqlite3", "forum.db")
 	log.Println(err)
@@ -44,6 +43,7 @@ func main() {
 	// 	Email:   "Tursynkhan@mail.ru",
 	// 	Pwd:     "hdfuivhishokv",
 	// })
+
 	rows, err := database.Query("SELECT * FROM users")
 	log.Println(err)
 	for rows.Next() {
@@ -52,6 +52,7 @@ func main() {
 		Users = append(Users, u)
 	}
 	fmt.Println(Users)
+	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe("localhost:8080", nil)
 }
 
