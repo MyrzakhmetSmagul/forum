@@ -4,30 +4,34 @@
 
 
 <div class="auth">
-    <form>
-        <table>
+    <form action="/addUser" method="post">
+        <table style="margin: auto;">
             <tr>
                 <th>Name</th>
-                <td><input type="text" placeholder="Adam"></td>
+                <td><input type="text" name="fName" placeholder="Adam" required></td>
             </tr>
             <tr>
                 <th>Surname</th>
-                <td><input type="text" placeholder="Adam"></td>
+                <td><input type="text" name="surname" placeholder="Adam" required></td>
             </tr>
             <tr>
                 <th>Gender</th>
-                <td><input type="text"></td>
+                <td><input type="text" name="gender" required></td>
             </tr>
             <tr>
                 <th>Email</th>
-                <td><input type="email" placeholder="example@email.com"></td>
+                <td><input type="email" name="email" placeholder="example@email.com"></td>
             </tr>
             <tr>
                 <th>Password</th>
-                <td><input type="password"></td>
+                <td><input type="password" name="pwd" required></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" value="create user" style="text-align: center;">
+                </td>
             </tr>
         </table>
-        <input type="submit">
     </form>
 </div>
 

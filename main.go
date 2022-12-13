@@ -26,17 +26,20 @@ func (u *User) UserInfo() string {
 	return info
 }
 
-var Users []User
+var (
+	Users []User
+	db    *sql.DB
+)
 
 func main() {
-	log.Println("localhost:8080")
-	database, err := sql.Open("sqlite3", "forum.db")
+	log.Println("server start at localhost:8080")
+	db, err := sql.Open("sqlite3", "forum.db")
 	log.Println(err)
 
-	createTable(database)
+	// createTable(database)
 	var u User
 
-	// addUser(database, &User{
+	// addUser(db, &User{
 	// 	Name:    "Tursynkhan",
 	// 	Surname: "Tursunov",
 	// 	Gender:  "MALE",
@@ -44,7 +47,7 @@ func main() {
 	// 	Pwd:     "hdfuivhishokv",
 	// })
 
-	rows, err := database.Query("SELECT * FROM users")
+	rows, err := db.Query("SELECT * FROM users")
 	log.Println(err)
 	for rows.Next() {
 		rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Gender, &u.Email, &u.Pwd)
@@ -53,6 +56,7 @@ func main() {
 	}
 	fmt.Println(Users)
 	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/addUser", addUserFromSite)
 	http.ListenAndServe("localhost:8080", nil)
 }
 
@@ -102,4 +106,29 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	temp.ExecuteTemplate(w, "index", nil)
+}
+
+func addUserFromSite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		fmt.Fprintf(w, "Bad Request!")
+		log.Println("method not equal post")
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Fprintf(w, "Internal Server Error!")
+		log.Println(err.Error())
+		return
+	}
+
+	newUser := User{
+		Name:    r.PostFormValue("fName"),
+		Surname: r.PostFormValue("surname"),
+		Gender:  r.PostFormValue("gender"),
+		Email:   r.PostFormValue("email"),
+		Pwd:     r.PostFormValue("pwd"),
+	}
+
+	addUser(db, &newUser)
 }
