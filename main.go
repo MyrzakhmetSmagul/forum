@@ -33,19 +33,10 @@ var (
 
 func main() {
 	log.Println("server start at localhost:8080")
-	db, err := sql.Open("sqlite3", "forum.db")
-	log.Println(err)
+	db, _ = sql.Open("sqlite3", "forum.db")
 
 	// createTable(database)
 	var u User
-
-	// addUser(db, &User{
-	// 	Name:    "Tursynkhan",
-	// 	Surname: "Tursunov",
-	// 	Gender:  "MALE",
-	// 	Email:   "Tursynkhan@mail.ru",
-	// 	Pwd:     "hdfuivhishokv",
-	// })
 
 	rows, err := db.Query("SELECT * FROM users")
 	log.Println(err)
@@ -54,7 +45,7 @@ func main() {
 		fmt.Println(u.UserInfo())
 		Users = append(Users, u)
 	}
-	fmt.Println(Users)
+
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/addUser", addUserFromSite)
 	http.ListenAndServe("localhost:8080", nil)
@@ -76,19 +67,24 @@ func createTable(db *sql.DB) {
 	log.Println("Table was created")
 }
 
-func addUser(db *sql.DB, u *User) {
+func addUser(db *sql.DB, u *User) error {
+	fmt.Println("######################################################\n\nMETHOD ADD USER THAT ADD USER IN DB \nFIRST CHECKPOINT\n\n######################################################")
 	record := `INSERT INTO 	users(name, surname, gender, email, pwd) VALUES(?, ?, ?, ?, ?)`
 	query, err := db.Prepare(record)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("##################################################\n%s\n##################################################\n", err)
+		return err
 	}
+	fmt.Println("######################################################\n\nMETHOD ADD USER THAT ADD USER IN DB\nSECOND CHECKPOINT\n\n######################################################")
 
 	_, err = query.Exec(u.Name, u.Surname, u.Gender, u.Email, u.Pwd)
 	if err != nil {
-		log.Fatal()
+		fmt.Printf("##################################################\n%s\n##################################################\n", err)
+		return err
 	}
-
+	fmt.Println("######################################################\n\nMETHOD ADD USER THAT ADD USER IN DB\nTHIRD CHECKPOINT\n\n######################################################")
 	log.Println("INSERT INTO OK")
+	return nil
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -110,14 +106,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func addUserFromSite(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		fmt.Fprintf(w, "Bad Request!")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		log.Println("method not equal post")
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		fmt.Fprintf(w, "Internal Server Error!")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return
 	}
@@ -129,6 +125,20 @@ func addUserFromSite(w http.ResponseWriter, r *http.Request) {
 		Email:   r.PostFormValue("email"),
 		Pwd:     r.PostFormValue("pwd"),
 	}
+	fmt.Println("######################################################\n\nADD USER ACTION WILL BE ACTIVATE\n\n######################################################")
+	err = addUser(db, &newUser)
 
-	addUser(db, &newUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	temp, err := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "index", nil)
 }
