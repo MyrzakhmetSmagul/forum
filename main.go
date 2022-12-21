@@ -36,24 +36,32 @@ func main() {
 	http.HandleFunc("/write", writeHandler)
 	http.HandleFunc("/addUser", addUserHandler)
 	http.HandleFunc("/signIn", signInHandler)
+	http.HandleFunc("/SavePost", savePostHandler)
 	http.ListenAndServe("localhost:8080", nil)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		log.Println(r.URL.Path)
-		http.NotFound(w, r)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Printf("url path %s != '/'\n", r.URL.Path)
 		return
 	}
 
 	temp, err := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
 	if err != nil {
-		fmt.Fprintf(w, "Internal Server Error!")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err.Error())
 		return
 	}
 
-	temp.ExecuteTemplate(w, "index", nil)
+	posts, err := dao.AllPosts(db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "index", posts)
 }
 
 func addUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -115,4 +123,23 @@ func signInHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	temp.ExecuteTemplate(w, "signin", nil)
+}
+
+func savePostHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	post := models.NewPost(r.PostFormValue("id"), r.PostFormValue("title"), r.PostFormValue("content"))
+
+	if dao.AddPost(db, post) != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	http.Redirect(w, r, "/", 302)
 }

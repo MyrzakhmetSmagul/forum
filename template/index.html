@@ -2,6 +2,15 @@
 
 {{ template "header" }}
 
+<div class="posts">
+    {{ range . }}
+        <div class="post" id="{{ .Id }}">
+            <h3>{{ .Title }}</h3>
+            <p>{{ .Content }}</p>
+        </div>
+    {{ end }}
+</div>
+
 {{ template "footer"}}
 
 {{ end }}
