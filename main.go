@@ -33,7 +33,9 @@ func main() {
 	}
 
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/addUser", addUserFromSite)
+	http.HandleFunc("/write", writeHandler)
+	http.HandleFunc("/addUser", addUserHandler)
+	http.HandleFunc("/signIn", signInHandler)
 	http.ListenAndServe("localhost:8080", nil)
 }
 
@@ -54,7 +56,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	temp.ExecuteTemplate(w, "index", nil)
 }
 
-func addUserFromSite(w http.ResponseWriter, r *http.Request) {
+func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		log.Println("method not equal post")
@@ -91,4 +93,26 @@ func addUserFromSite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	temp.ExecuteTemplate(w, "index", nil)
+}
+
+func writeHandler(w http.ResponseWriter, r *http.Request) {
+	temp, err := template.ParseFiles("./template/write.html", "./template/header.html", "./template/footer.html")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "write", nil)
+}
+
+func signInHandler(w http.ResponseWriter, r *http.Request) {
+	temp, err := template.ParseFiles("./template/signin.html", "./template/header.html", "./template/footer.html")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "signin", nil)
 }

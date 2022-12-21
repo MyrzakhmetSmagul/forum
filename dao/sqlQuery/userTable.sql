@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+		user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+		name TEXT NOT NULL, 
+		surname TEXT NOT NULL, 
+		gender TEXT NOT NULL, 
+		email TEXT, 
+		pwd TEXT NOT NULL)

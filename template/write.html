@@ -1,0 +1,22 @@
+{{ define "write" }}
+
+{{ template "header" }}
+
+<div class="postWrite">
+    <form method="post" action="/SavePost">
+        <div class="title">
+            <label>Title</label>
+            <input type="text" name="title"/>
+        </div>
+        <div class="content">
+            <label>Content</label>
+            <textarea name="content"></textarea>
+        </div>
+        <input type="submit" value="Submit">
+    </form>
+    <a href="/DeletePost">Delete post</a>
+</div>
+
+{{ template "footer" }}
+
+{{ end }}
