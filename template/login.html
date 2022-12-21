@@ -1,16 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Login</title>
-</head>
-<body>
-<dev class="user_info">
+{{ define "signin" }}
+
+{{ template "header" }}
+
+<div class="user_info">
     <form>
         <label>Log in</label>
         <input name="user_email" type="email" required>
         <input name="user_pwd" type="password" required>
         <input type="submit">
     </form>
-</dev>
-</body>
-</html> 
+</div>
+
+{{ template "footer"}}
+
+{{ end }}
