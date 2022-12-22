@@ -19,15 +19,19 @@ var (
 
 func main() {
 	log.Println("server start at localhost:8080")
-	db, _ = sql.Open("sqlite3", "forum.db")
+	var err error
+	db, err = sql.Open("sqlite3", "forum.db")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 
-	// createTable(database)
 	var u models.User
 
 	rows, err := db.Query("SELECT * FROM users")
 	log.Println(err)
 	for rows.Next() {
-		rows.Scan(&u.Id, &u.Name, &u.Surname, &u.Gender, &u.Email, &u.Pwd)
+		rows.Scan(&u.Id, &u.UName, &u.Email, &u.Pwd)
 		fmt.Println(u.UserInfo())
 		Users = append(Users, u)
 	}
@@ -79,13 +83,11 @@ func addUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := models.User{
-		Name:    r.PostFormValue("fName"),
-		Surname: r.PostFormValue("surname"),
-		Gender:  r.PostFormValue("gender"),
-		Email:   r.PostFormValue("email"),
-		Pwd:     r.PostFormValue("pwd"),
+		UName: r.PostFormValue("uname"),
+		Email: r.PostFormValue("email"),
+		Pwd:   r.PostFormValue("pwd"),
 	}
-	fmt.Println("######################################################\n\nADD USER ACTION WILL BE ACTIVATE\n\n######################################################")
+
 	err = dao.AddUser(db, &newUser)
 
 	if err != nil {
@@ -133,7 +135,7 @@ func savePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post := models.NewPost(r.PostFormValue("id"), r.PostFormValue("title"), r.PostFormValue("content"))
+	post := models.NewPost(r.PostFormValue("id"), r.PostFormValue("title"), r.PostFormValue("content"), "1")
 
 	if dao.AddPost(db, post) != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -142,4 +144,15 @@ func savePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/", 302)
+}
+
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	temp, err := template.ParseFiles("./template/write.html", "./template/header.html", "./template/footer.html")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	temp.ExecuteTemplate(w, "write", nil)
 }

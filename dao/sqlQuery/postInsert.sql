@@ -1,2 +1,2 @@
-INSERT INTO posts (title, content)
-VALUES (?, ?) 
+INSERT INTO posts (title, content, user_id)
+VALUES (?, ?, ?) 

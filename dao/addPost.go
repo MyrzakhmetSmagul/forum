@@ -4,17 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"forum/models"
-	"io/ioutil"
 	"log"
 )
 
 func AddPost(db *sql.DB, post *models.Post) error {
-	data, err := ioutil.ReadFile("./dao/sqlQuery/postInsert.sql")
-	if err != nil {
-		log.Panicln(err.Error())
-		return err
-	}
-	query, err := db.Prepare(string(data))
+	queryText := `INSERT INTO posts (title, content, user_id)
+	VALUES (?, ?, ?) `
+
+	query, err := db.Prepare(queryText)
 	if err != nil {
 		log.Panicln(err.Error())
 		return err

@@ -1,2 +1,2 @@
-INSERT INTO users(name, surname, gender, email, pwd) 
-VALUES(?, ?, ?, ?, ?)
+INSERT INTO users(uname, email, pwd) 
+VALUES(?, ?, ?)
