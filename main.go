@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/addUser", addUserHandler)
 	http.HandleFunc("/signIn", signInHandler)
 	http.HandleFunc("/SavePost", savePostHandler)
+	http.HandleFunc("/edit", editHandler)
 	http.ListenAndServe("localhost:8080", nil)
 }
 
@@ -95,14 +96,7 @@ func addUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	temp, err := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	temp.ExecuteTemplate(w, "index", nil)
+	http.Redirect(w, r, "/", 302)
 }
 
 func writeHandler(w http.ResponseWriter, r *http.Request) {

@@ -23,7 +23,7 @@ func AllPosts(db *sql.DB) ([]models.Post, error) {
 	}
 
 	for rows.Next() {
-		rows.Scan(&post.Id, &post.Title, &post.Content)
+		rows.Scan(&post.Id, &post.Title, &post.Content, &post.UserId)
 		posts = append(posts, post)
 	}
 	return posts, nil

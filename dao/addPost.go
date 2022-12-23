@@ -16,7 +16,7 @@ func AddPost(db *sql.DB, post *models.Post) error {
 		log.Panicln(err.Error())
 		return err
 	}
-	_, err = query.Exec(post.Title, post.Content)
+	_, err = query.Exec(post.Title, post.Content, post.UserId)
 	if err != nil {
 		log.Panic(err.Error())
 		return err
