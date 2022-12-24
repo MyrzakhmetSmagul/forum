@@ -3,20 +3,16 @@ package dao
 import (
 	"database/sql"
 	"forum/models"
-	"io/ioutil"
 	"log"
 )
 
 func AllPosts(db *sql.DB) ([]models.Post, error) {
 	var posts []models.Post
 	var post models.Post
-	data, err := ioutil.ReadFile("./dao/sqlQuery/allPosts.sql")
-	if err != nil {
-		log.Println(err.Error())
-		return posts, err
-	}
 
-	rows, err := db.Query(string(data))
+	sqlStmt := `SELECT * from posts`
+
+	rows, err := db.Query(sqlStmt)
 	if err != nil {
 		log.Println(err.Error())
 		return posts, err

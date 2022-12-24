@@ -1,0 +1,55 @@
+как ссоздать вторичный ключ который ссылается на две таблицы sqlite3
+
+Вот пример:
+
+CREATE TABLE books ( 
+    book_id INTEGER PRIMARY KEY, 
+    title TEXT NOT NULL, 
+    author_id INTEGER NOT NULL, 
+    FOREIGN KEY (author_id) REFERENCES authors (author_id) 
+); 
+
+CREATE TABLE authors ( 
+    author_id INTEGER PRIMARY KEY, 
+    first_name TEXT NOT NULL, 
+    last_name TEXT NOT NULL 
+);
+
+CREATE TABLE book_categories ( 
+    book_id INTEGER NOT NULL, 
+    category_id INTEGER NOT NULL, 
+    FOREIGN KEY (book_id) REFERENCES books (book_id), 
+    FOREIGN KEY (category_id) REFERENCES categories (category_id) 
+);
+
+CREATE TABLE categories ( 
+    category_id INTEGER PRIMARY KEY, 
+    name TEXT NOT NULL 
+);
+
+можно ли сделать так чтобы один атрибут мог ссылатся на две таблицы?
+
+Да, это возможно. Вы можете использовать двойной внешний ключ, чтобы создать вторичный ключ, который ссылается на две таблицы. Пример запроса для этого:
+
+CREATE TABLE book_categories ( 
+    book_id INTEGER NOT NULL, 
+    category_id INTEGER NOT NULL, 
+    FOREIGN KEY (book_id, category_id) REFERENCES books (book_id), categories (category_id) 
+);
+
+можно ли ссылатся на первичный ключ того же таблицы?
+
+Да, это возможно. Вы можете ссылаться на первичный ключ одной и той же таблицы. Пример запроса для этого:
+
+CREATE TABLE books ( 
+    book_id INTEGER PRIMARY KEY, 
+    title TEXT NOT NULL, 
+    author_id INTEGER NOT NULL, 
+    parent_book_id INTEGER, 
+    FOREIGN KEY (author_id) REFERENCES authors (author_id), 
+    FOREIGN KEY (parent_book_id) REFERENCES books (book_id) 
+);
+для чего нужно ссылатся на атрибуты других таблиц?
+
+Ссылка на атрибуты других таблиц необходима для сохранения целостности данных. Это позволяет гарантировать, что данные в базе данных всегда корректны и актуальны. Например, если вы создаете таблицу с книгами и авторами, то используя внешний ключ, вы можете гарантировать, что автор назначен для каждой книги.
+
