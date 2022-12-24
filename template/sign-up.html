@@ -1,10 +1,10 @@
-{{ define "signin" }}
+{{ define "sign-up" }}
 
 {{ template "header" }}
 
 
 <div class="auth">
-    <form action="/addUser" method="post">
+    <form action="/sign-up" method="post">
         <div class="tab">User info:
             <input class="info" placeholder="Username" name="uname" required/>
             <input class="info" type="email" placeholder="Email" name="email" required/>

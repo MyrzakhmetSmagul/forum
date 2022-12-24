@@ -3,11 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"forum/dao"
 	"forum/models"
-	"html/template"
 	"log"
 	"net/http"
+	"text/template"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -26,127 +25,55 @@ func main() {
 		return
 	}
 
-	var u models.User
-
-	rows, err := db.Query("SELECT * FROM users")
-	log.Println(err)
-	for rows.Next() {
-		rows.Scan(&u.Id, &u.UName, &u.Email, &u.Pwd)
-		fmt.Println(u.UserInfo())
-		Users = append(Users, u)
-	}
-
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/write", writeHandler)
-	http.HandleFunc("/addUser", addUserHandler)
-	http.HandleFunc("/signIn", signInHandler)
-	http.HandleFunc("/SavePost", savePostHandler)
-	http.HandleFunc("/edit", editHandler)
-	http.ListenAndServe("localhost:8080", nil)
+	http.ListenAndServe(":8080", nil)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		log.Printf("url path %s != '/'\n", r.URL.Path)
-		return
+	switch r.URL.Path {
+	case "/sign-in-form":
+		fmt.Println("sign-in-form")
+		getSignInUser(w, r)
+	case "/sign-up-form":
+		getSignUpUser(w, r)
+	case "/sign-in":
+		signInUser(w, r)
+	case "/sign-up":
+		signUpUser(w, r)
+	default:
+		homePage(w, r)
 	}
-
-	temp, err := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	posts, err := dao.AllPosts(db)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	temp.ExecuteTemplate(w, "index", posts)
 }
 
-func addUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		log.Println("method not equal post")
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	newUser := models.User{
-		UName: r.PostFormValue("uname"),
-		Email: r.PostFormValue("email"),
-		Pwd:   r.PostFormValue("pwd"),
-	}
-
-	err = dao.AddUser(db, &newUser)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/", 302)
+func homePage(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
+	t.ExecuteTemplate(w, "index", nil)
 }
 
-func writeHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("./template/write.html", "./template/header.html", "./template/footer.html")
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	temp.ExecuteTemplate(w, "write", nil)
+func getSignInUser(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./template/sign-in.html", "./template/header.html", "./template/footer.html")
+	t.ExecuteTemplate(w, "sign-in", nil)
 }
 
-func signInHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("./template/signin.html", "./template/header.html", "./template/footer.html")
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	temp.ExecuteTemplate(w, "signin", nil)
+func getSignUpUser(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./template/sign-up.html", "./template/header.html", "./template/footer.html")
+	t.ExecuteTemplate(w, "sign-up", nil)
 }
 
-func savePostHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	post := models.NewPost(r.PostFormValue("id"), r.PostFormValue("title"), r.PostFormValue("content"), "1")
-
-	if dao.AddPost(db, post) != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
-
-	http.Redirect(w, r, "/", 302)
+func signInUser(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
 }
 
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("./template/write.html", "./template/header.html", "./template/footer.html")
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println(err.Error())
-		return
-	}
+func signUpUser(w http.ResponseWriter, r *http.Request) {
+	newUser := getUser(r)
+	DefaultUserService.createUser(newUser)
+}
 
-	temp.ExecuteTemplate(w, "write", nil)
+func getUser(r *http.Request) *models.User {
+	email := r.FormValue("email")
+	passwd := r.FormValue("pwd")
+	return &models.User{
+		Email: email,
+		Pwd:   passwd,
+	}
 }
