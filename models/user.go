@@ -27,7 +27,7 @@ func (u *User) UserInfo() string {
 	return info
 }
 
-func GetPassordHash(password string) (string, error) {
+func PasswordHashing(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 0)
 	return string(hash), err
 }

@@ -8,20 +8,20 @@ import (
 )
 
 func AddPost(db *sql.DB, post *models.Post) error {
-	queryText := `INSERT INTO posts (title, content, user_id)
-	VALUES (?, ?, ?) `
-
-	query, err := db.Prepare(queryText)
+	sqlStmt := `INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)`
+	query, err := db.Prepare(sqlStmt)
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Println(err)
 		return err
 	}
-	_, err = query.Exec(post.Title, post.Content, post.UserId)
+	defer query.Close()
+
+	_, err = query.Exec(post.UserId, post.Title, post.Content)
 	if err != nil {
-		log.Panic(err.Error())
+		log.Println(err)
 		return err
 	}
 
 	fmt.Println("###########################\n\nADD POST SUCCESFULLY\n\n########################")
-	return err
+	return nil
 }

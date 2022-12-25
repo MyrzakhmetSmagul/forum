@@ -53,13 +53,31 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	userCookie, err := r.Cookie("authToken")
 	if err != nil {
 		log.Println(err)
-	}
-	if v, ok := Cookies[userCookie.Value]; ok {
-		fmt.Fprintf(w, "<h1>%s</h1>", v)
-		log.Println("we have cookie")
+		t.ExecuteTemplate(w, "index", nil)
 		return
 	}
-	t.ExecuteTemplate(w, "index", nil)
+
+	session := models.Session{Token: userCookie.Value}
+	exist, err := dao.IsExistSession(db, &session)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	if !exist {
+		t.ExecuteTemplate(w, "index", nil)
+		return
+	}
+
+	err = dao.GetSessionFromDB(db, &session)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	fmt.Fprintf(w, "<h1>user exist and have token")
 }
 
 func getSignInUser(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +116,18 @@ func signInUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func signUpUser(w http.ResponseWriter, r *http.Request) {
-	if dao.SearchUser(db, &models.User{UName: r.FormValue("uname"), Email: r.FormValue("email")}) {
-		fmt.Fprintf(w, "<h1>user exist</h1>")
+	t, _ := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
+	exist, err := dao.IsExistUser(db, &models.User{UName: r.FormValue("uname"), Email: r.FormValue("email")})
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(err)
 		return
 	}
+
+	if exist {
+		fmt.Fprintln(w, "<h1>User exist</h1>")
+		return
+	}
+
+	t.ExecuteTemplate(w, "index", nil)
 }

@@ -7,9 +7,7 @@ import (
 )
 
 func AllPosts(db *sql.DB) ([]models.Post, error) {
-	var posts []models.Post
-	var post models.Post
-
+	posts := []models.Post{}
 	sqlStmt := `SELECT * from posts`
 
 	rows, err := db.Query(sqlStmt)
@@ -17,10 +15,20 @@ func AllPosts(db *sql.DB) ([]models.Post, error) {
 		log.Println(err.Error())
 		return posts, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
-		rows.Scan(&post.Id, &post.Title, &post.Content, &post.UserId)
+		var post models.Post
+		err := rows.Scan(&post.PostId, &post.UserId, &post.Title, &post.Content)
+		if err != nil {
+			return posts, err
+		}
 		posts = append(posts, post)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return posts, err
 	}
 	return posts, nil
 }
