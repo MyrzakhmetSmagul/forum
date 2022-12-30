@@ -8,7 +8,7 @@ import (
 )
 
 func AddUser(db *sql.DB, u *models.User) error {
-	sqlStmt := `INSERT INTO users(uname, email, pwd) 
+	sqlStmt := `INSERT INTO users(uname, email, passwd) 
 	VALUES(?, ?, ?)`
 
 	query, err := db.Prepare(sqlStmt)
@@ -16,7 +16,7 @@ func AddUser(db *sql.DB, u *models.User) error {
 		return err
 	}
 
-	hashedPassword, err := models.PasswordHashing(u.Pwd)
+	hashedPassword, err := models.PasswordHashing(u.Passwd)
 	if err != nil {
 		return err
 	}
@@ -37,8 +37,8 @@ func AddUser(db *sql.DB, u *models.User) error {
 }
 
 func UserVerification(db *sql.DB, u *models.User) bool {
-	sqlStmt := `SELECT user_id, uname  FROM users WHERE email=? AND pwd=?`
-	err := db.QueryRow(sqlStmt, u.Email, u.Pwd).Scan(&u.Id, &u.UName)
+	sqlStmt := `SELECT user_id, uname  FROM users WHERE email=? AND passwd=?`
+	err := db.QueryRow(sqlStmt, u.Email, u.Passwd).Scan(&u.Id, &u.UName)
 	if err != nil {
 		log.Println(err)
 		return false
@@ -49,12 +49,12 @@ func UserVerification(db *sql.DB, u *models.User) bool {
 
 func IsExistUser(db *sql.DB, u *models.User) (bool, error) {
 	sqlStmt := `SELECT EXISTS (SELECT 1 FROM users WHERE uname=? OR email=?)`
-	var exist bool
+	var exist int
 	err := db.QueryRow(sqlStmt, u.UName, u.Email).Scan(&exist)
 	if err != nil {
 		log.Println(err)
 		return false, err
 	}
 
-	return exist, nil
+	return exist == 1, nil
 }

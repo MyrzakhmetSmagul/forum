@@ -7,17 +7,17 @@ import (
 )
 
 type User struct {
-	Id    string
-	UName string
-	Email string
-	Pwd   string
+	Id     string
+	UName  string
+	Email  string
+	Passwd string
 }
 
-func NewUser(uname, email, pwd string) *User {
+func NewUser(uname, email, passwd string) *User {
 	return &User{
-		UName: uname,
-		Email: email,
-		Pwd:   pwd,
+		UName:  uname,
+		Email:  email,
+		Passwd: passwd,
 	}
 }
 

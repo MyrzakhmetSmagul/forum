@@ -14,7 +14,26 @@ func AddSession(db *sql.DB, session *models.Session) error {
 		return err
 	}
 
+	defer query.Close()
+
 	_, err = query.Exec(session.Token, session.UserId)
+	if err != nil {
+		log.Println("ADD SESSION FUNCTION ERROR:", err)
+		return err
+	}
+
+	sqlStmt = `SELECT token_id FROM sessions WHERE token=? and user_id=?`
+	query, err = db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println("ADD SESSION FUNCTION ERROR:", err)
+		return err
+	}
+
+	err = query.QueryRow(session.Token, session.UserId).Scan(&session.TokenId)
+	if err != nil {
+		log.Println("ADD SESSION FUNCTION ERROR:", err)
+		return err
+	}
 	return nil
 }
 
