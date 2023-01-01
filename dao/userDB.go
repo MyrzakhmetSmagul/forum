@@ -36,19 +36,19 @@ func AddUser(db *sql.DB, u *models.User) error {
 	return nil
 }
 
-func UserVerification(db *sql.DB, u *models.User) bool {
+func UserVerification(db *sql.DB, u *models.User) error {
 	sqlStmt := `SELECT user_id, uname  FROM users WHERE email=? AND passwd=?`
 	err := db.QueryRow(sqlStmt, u.Email, u.Passwd).Scan(&u.Id, &u.UName)
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
 
 func IsExistUser(db *sql.DB, u *models.User) (bool, error) {
-	sqlStmt := `SELECT EXISTS (SELECT 1 FROM users WHERE uname=? OR email=?)`
+	sqlStmt := `SELECT EXISTS(SELECT 1 FROM users WHERE uname=? OR email=?) LIMIT 1`
 	var exist int
 	err := db.QueryRow(sqlStmt, u.UName, u.Email).Scan(&exist)
 	if err != nil {

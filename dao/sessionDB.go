@@ -64,3 +64,34 @@ func GetSessionFromDB(db *sql.DB, session *models.Session) error {
 
 	return nil
 }
+
+func GetAllSession(db *sql.DB, cookies *map[string]*models.Session) error {
+	sqlStmt := `SELECT * FROM sessions`
+	rows, err := db.Query(sqlStmt)
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+
+	}
+	return nil
+}
+
+func DeleteSession(db *sql.DB, session *models.Session) error {
+	sqlStmt := `DELETE FROM sessions WHERE token_id=?`
+	query, err := db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println("DELETE SESSION DB PREPARE:", err)
+		return err
+	}
+	defer query.Close()
+
+	_, err = query.Exec(session.TokenId)
+	if err != nil {
+		log.Println("DELETE SESSION DB PREPARE:", err)
+		return err
+	}
+
+	return nil
+}
