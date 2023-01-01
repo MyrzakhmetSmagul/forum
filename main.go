@@ -79,6 +79,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 	err = checkCookie(userCookie, &session)
 	if err != nil {
+		log.Println("cookie check problem", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -102,6 +103,7 @@ func getSignUpUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func signInUser(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./template/index.html", "./template/header.html", "./template/footer.html")
 	user := &models.User{
 		Email:  r.FormValue("email"),
 		Passwd: r.FormValue("passwd"),
@@ -114,6 +116,7 @@ func signInUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := uuid.NewV4()
 	if err != nil {
+		fmt.Println("token error")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -127,13 +130,14 @@ func signInUser(w http.ResponseWriter, r *http.Request) {
 
 	err = dao.AddSession(db, &session)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	Cookies[token.String()] = &session
 	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/", 302)
+	t.ExecuteTemplate(w, "index", nil)
 }
 
 func signUpUser(w http.ResponseWriter, r *http.Request) {

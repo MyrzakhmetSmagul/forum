@@ -5,6 +5,8 @@ import (
 	"forum/models"
 	"log"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func AddUser(db *sql.DB, u *models.User) error {
@@ -15,11 +17,12 @@ func AddUser(db *sql.DB, u *models.User) error {
 	if err != nil {
 		return err
 	}
-
+	log.Printf("**********\n%s\n**********\n", u.Passwd)
 	hashedPassword, err := models.PasswordHashing(u.Passwd)
 	if err != nil {
 		return err
 	}
+	log.Printf("**********\n%s\n**********\n", hashedPassword)
 
 	result, err := query.Exec(u.UName, u.Email, hashedPassword)
 	if err != nil {
@@ -37,18 +40,29 @@ func AddUser(db *sql.DB, u *models.User) error {
 }
 
 func UserVerification(db *sql.DB, u *models.User) error {
-	sqlStmt := `SELECT user_id, uname  FROM users WHERE email=? AND passwd=?`
-	err := db.QueryRow(sqlStmt, u.Email, u.Passwd).Scan(&u.Id, &u.UName)
+	sqlStmt := `SELECT user_id, uname, passwd  FROM users WHERE email=?`
+	query, err := db.Prepare(sqlStmt)
+	if err != nil {
+		return err
+	}
+
+	tempPasswd := u.Passwd
+	err = query.QueryRow(u.Email).Scan(&u.Id, &u.UName, &u.Passwd)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
+	bcrypt.CompareHashAndPassword([]byte(u.Passwd), []byte(tempPasswd))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	return nil
 }
 
 func IsExistUser(db *sql.DB, u *models.User) (bool, error) {
-	sqlStmt := `SELECT EXISTS(SELECT 1 FROM users WHERE uname=? OR email=?) LIMIT 1`
+	sqlStmt := `SELECT EXISTS(SELECT 1 FROM users WHERE uname=? OR email=? LIMIT 1)`
 	var exist int
 	err := db.QueryRow(sqlStmt, u.UName, u.Email).Scan(&exist)
 	if err != nil {

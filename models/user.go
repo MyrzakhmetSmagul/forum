@@ -28,6 +28,6 @@ func (u *User) UserInfo() string {
 }
 
 func PasswordHashing(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 0)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(hash), err
 }
