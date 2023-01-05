@@ -59,7 +59,7 @@ func createTable(db *sql.DB) error {
 		category_id INTEGER NOT NULL,
 		PRIMARY KEY (post_id, category_id),
 		FOREIGN KEY (post_id) REFERENCES posts (post_id),
-		FOREIGN KEY (categories_id) REFERENCES categories (category_id)
+		FOREIGN KEY (category_id) REFERENCES categories (category_id)
 	)`
 
 	session := `
@@ -79,8 +79,6 @@ func createTable(db *sql.DB) error {
 		user_id INTEGER NOT NULL,
 		username TEXT NOT NULL,
 		message TEXT NOT NULL,
-		like INTEGER NOT NULL,
-		dislike INTEGER NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(user_id),
 		FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
 	)
@@ -88,24 +86,24 @@ func createTable(db *sql.DB) error {
 
 	postsLikesDislikes := `
 	CREATE TABLE IF NOT EXISTS posts_likes_dislikes (
-		Id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		post_id INTEGER NOT NULL,
 		user_id INTEGER NOT NULL,
 		like INTEGER NOT NULL,
 		dislike INTEGER NOT NULL,
-		FOREIGN KEY (post_id) REFERENCES posts (post_id)
-	);
+		FOREIGN KEY (post_id) REFERENCES posts (post_id) ON DELETE CASCADE
+	)
 	`
 
 	commentsLikesDislikes := `
-	CREATE TABLE IF NOT EXISTS posts_likes_dislikes (
-		Id INTEGER PRIMARY KEY AUTOINCREMENT,
+	CREATE TABLE IF NOT EXISTS comments_likes_dislikes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		comment_id INTEGER NOT NULL,
 		user_id INTEGER NOT NULL,
 		like INTEGER NOT NULL,
 		dislike INTEGER NOT NULL,
-		FOREIGN KEY (comment_id) REFERENCES comments (comment_id)
-	);
+		FOREIGN KEY (comment_id) REFERENCES comments (comment_id) ON DELETE CASCADE
+	)
 	`
 
 	query = append(query, users, posts, categories, post_categories, session, comments, postsLikesDislikes, commentsLikesDislikes)
