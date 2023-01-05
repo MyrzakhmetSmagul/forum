@@ -63,9 +63,10 @@ func (u *userQuery) UserVerification(user *model.User) error {
 
 	bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(tempPasswd))
 	if err != nil {
-		log.Println(err)
-		return err
+		log.Println("the user's password is incorrect", err)
+		return errors.New("the user's password is incorrect")
 	}
+
 	return nil
 }
 

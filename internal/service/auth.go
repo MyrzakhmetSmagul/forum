@@ -1,12 +1,14 @@
 package service
 
 import (
+	"log"
+
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 	"github.com/MyrzakhmetSmagul/forum/internal/repository"
 )
 
 type AuthService interface {
-	SignIn(user *model.User) error
+	SignIn(user *model.User, session *model.Session) error
 }
 
 type authService struct {
@@ -21,7 +23,12 @@ func NewAuthService(dao repository.DAO) AuthService {
 	}
 }
 
-func (a *authService) SignIn(user *model.User) error {
+func (a *authService) SignIn(user *model.User, session *model.Session) error {
+	err := a.UserQuery.UserVerification(user)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	return nil
 }
