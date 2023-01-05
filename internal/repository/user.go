@@ -44,7 +44,7 @@ func (u *userQuery) CreateUser(user *model.User) error {
 }
 
 func (u *userQuery) UserVerification(user *model.User) error {
-	sqlStmt := `SELECT user_id, uname, passwd  FROM users WHERE email=?`
+	sqlStmt := `SELECT user_id, username, password  FROM users WHERE email=?`
 	query, err := u.db.Prepare(sqlStmt)
 	if err != nil {
 		return err
