@@ -23,6 +23,7 @@ func NewDB() (*sql.DB, error) {
 	log.Println("database was created successfully")
 	return db, nil
 }
+
 func createTable(db *sql.DB) error {
 	query := []string{}
 
@@ -34,26 +35,32 @@ func createTable(db *sql.DB) error {
 		password TEXT NOT NULL
 	)
 	`
+
 	posts := `
 	CREATE TABLE IF NOT EXISTS posts(
 		post_id INTEGER PRIMARY KEY AUTOINCREMENT,
-		category_id INTEGER NOT NULL,
 		title TEXT NOT NULL,
 		content TEXT NOT NULL,
 		user_id INTEGER NOT NULL,
 		username TEXT NOT NULL,
-		like INTEGER NOT NULL,
-		dislike INTEGER NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users (user_id),
-		FOREIGN KEY (category_id) REFERENCES categories (category_id)
+		FOREIGN KEY (user_id) REFERENCES users (user_id)
 	)
 	`
+
 	categories := `
 	CREATE TABLE IF NOT EXISTS categories(
 		category_id INTEGER PRIMARY KEY AUTOINCREMENT,
 		category TEXT NOT NULL
 	)
 	`
+
+	post_categories := `CREATE TABLE IF NOT EXISTS post_categories (
+		post_id INTEGER NOT NULL,
+		category_id INTEGER NOT NULL,
+		PRIMARY KEY (post_id, category_id),
+		FOREIGN KEY (post_id) REFERENCES posts (post_id),
+		FOREIGN KEY (categories_id) REFERENCES categories (category_id)
+	)`
 
 	session := `
 	CREATE TABLE IF NOT EXISTS sessions(
@@ -79,53 +86,35 @@ func createTable(db *sql.DB) error {
 	)
 	`
 
-	postLikes := `
-	CREATE TABLE IF NOT EXISTS post_likes(
-		user_id INTEGER NOT NULL,
-		username TEXT NOT NULL,
+	postsLikesDislikes := `
+	CREATE TABLE IF NOT EXISTS posts_likes_dislikes (
+		Id INTEGER PRIMARY KEY AUTOINCREMENT,
 		post_id INTEGER NOT NULL,
-		status INTEGER NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users(user_id),
-		FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
-	)
+		user_id INTEGER NOT NULL,
+		like INTEGER NOT NULL,
+		dislike INTEGER NOT NULL,
+		FOREIGN KEY (post_id) REFERENCES posts (post_id)
+	);
 	`
 
-	postDislikes := `
-	CREATE TABLE IF NOT EXISTS post_dislikes(
-		user_id INTEGER NOT NULL,
-		username TEXT NOT NULL,
-		post_id INTEGER NOT NULL,
-		status INTEGER NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users(user_id),
-		FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
-	)
-	`
-
-	commentLikes := `CREATE TABLE IF NOT EXISTS comment_likes(
-		user_id INTEGER NOT NULL,
-		username TEXT NOT NULL, 
+	commentsLikesDislikes := `
+	CREATE TABLE IF NOT EXISTS posts_likes_dislikes (
+		Id INTEGER PRIMARY KEY AUTOINCREMENT,
 		comment_id INTEGER NOT NULL,
-		status INTEGER NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users(user_id),
-		FOREIGN KEY (comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE
-	)
-	`
-	commentDislikes := `CREATE TABLE IF NOT EXISTS comment_dislikes(
 		user_id INTEGER NOT NULL,
-		username TEXT NOT NULL, 
-		comment_id INTEGER NOT NULL,
-		status INTEGER NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users(user_id),
-		FOREIGN KEY (comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE
-	)
+		like INTEGER NOT NULL,
+		dislike INTEGER NOT NULL,
+		FOREIGN KEY (comment_id) REFERENCES comments (comment_id)
+	);
 	`
 
-	query = append(query, users, posts, categories, session, comments, postLikes, postDislikes, commentDislikes, commentLikes)
+	query = append(query, users, posts, categories, post_categories, session, comments, postsLikesDislikes, commentsLikesDislikes)
 	for _, v := range query {
 		_, err := db.Exec(v)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
