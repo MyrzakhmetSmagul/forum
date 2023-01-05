@@ -18,14 +18,8 @@ type postReactionQuery struct {
 }
 
 func (pr *postReactionQuery) PostLike(reaction *model.PostReaction) error {
-	sqlStmt := `SELECT id, like, dislike FROM posts_likes_dislikes WHERE post_id=? and user_id=?`
-	query, err := pr.db.Prepare(sqlStmt)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
+	var sqlStmt string
+	err := pr.GetUserReactionToPost(reaction)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -41,28 +35,25 @@ func (pr *postReactionQuery) PostLike(reaction *model.PostReaction) error {
 		sqlStmt = `UPDATE posts_likes_dislikes SET like=0 WHERE Id=?`
 		err = pr.updatePostReaction(sqlStmt, pr.db, reaction)
 	}
+
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	sqlStmt = `SELECT like, dislike FROM posts_likes_dislikes WHERE Id=?`
 	err = pr.db.QueryRow(sqlStmt, reaction.ID).Scan(&reaction.Like, &reaction.Dislike)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	return nil
 }
 
 func (pr *postReactionQuery) PostDislike(reaction *model.PostReaction) error {
-	sqlStmt := `SELECT id, like, dislike FROM posts_likes_dislikes WHERE post_id=? and user_id=?`
-	query, err := pr.db.Prepare(sqlStmt)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
+	var sqlStmt string
+	err := pr.GetUserReactionToPost(reaction)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -78,10 +69,12 @@ func (pr *postReactionQuery) PostDislike(reaction *model.PostReaction) error {
 		sqlStmt = `UPDATE posts_likes_dislikes SET dislike=0 WHERE Id=?`
 		err = pr.updatePostReaction(sqlStmt, pr.db, reaction)
 	}
+
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	sqlStmt = `SELECT like, dislike FROM posts_likes_dislikes WHERE Id=?`
 	err = pr.db.QueryRow(sqlStmt, reaction.ID).Scan(&reaction.Like, &reaction.Dislike)
 	if err != nil {
@@ -107,6 +100,24 @@ func (pr *postReactionQuery) updatePostReaction(sqlStmt string, db *sql.DB, reac
 
 	if rowsAffected == 0 {
 		return errors.New("reaction set was failed")
+	}
+	return nil
+}
+
+func (pr *postReactionQuery) GetUserReactionToPost(reaction *model.PostReaction) error {
+	sqlStmt := `SELECT id, like, dislike FROM posts_likes_dislikes WHERE post_id=? and user_id=?`
+	query, err := pr.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer query.Close()
+
+	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 	return nil
 }

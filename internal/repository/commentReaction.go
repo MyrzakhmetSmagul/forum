@@ -18,10 +18,12 @@ type commentReactionQuery struct {
 }
 
 func (cr *commentReactionQuery) CommentLike(reaction *model.CommentReaction) error {
-	var (
-		sqlStmt string
-		err     error
-	)
+	var sqlStmt string
+	err := cr.GetUserReactionToComment(reaction)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	if reaction.Like == reaction.Dislike {
 		sqlStmt = `UPDATE comments_likes_dislikes SET like=1 WHERE Id=?`
@@ -47,10 +49,12 @@ func (cr *commentReactionQuery) CommentLike(reaction *model.CommentReaction) err
 }
 
 func (cr *commentReactionQuery) CommentDislike(reaction *model.CommentReaction) error {
-	var (
-		sqlStmt string
-		err     error
-	)
+	var sqlStmt string
+	err := cr.GetUserReactionToComment(reaction)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
 	if reaction.Like == reaction.Dislike {
 		sqlStmt = `UPDATE comments_likes_dislikes SET dislike=1 WHERE Id=?`
@@ -104,6 +108,8 @@ func (cr *commentReactionQuery) GetUserReactionToComment(reaction *model.Comment
 		log.Println(err)
 		return err
 	}
+
+	defer query.Close()
 
 	err = query.QueryRow(reaction.Comment.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
