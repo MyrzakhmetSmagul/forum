@@ -24,6 +24,8 @@ func (p *postQuery) CreatePost(post *model.Post) error {
 		return err
 	}
 
+	defer query.Close()
+
 	result, err := query.Exec(post.Title, post.Content, post.User.ID, post.User.Username)
 	if err != nil {
 		log.Println(err)
@@ -47,6 +49,8 @@ func (p *postQuery) GetPost(post *model.Post) error {
 		log.Println(err)
 		return err
 	}
+
+	defer query.Close()
 
 	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, post.User.ID, post.User.Username)
 	if err != nil {

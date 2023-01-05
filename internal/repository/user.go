@@ -29,6 +29,8 @@ func (u *userQuery) CreateUser(user *model.User) error {
 		return err
 	}
 
+	defer query.Close()
+
 	result, err := query.Exec(user.Username, user.Email, user.Password)
 	if err != nil {
 		return err
@@ -49,6 +51,8 @@ func (u *userQuery) UserVerification(user *model.User) error {
 	if err != nil {
 		return err
 	}
+
+	defer query.Close()
 
 	tempPasswd := user.Password
 	err = query.QueryRow(user.Email).Scan(&user.ID, &user.Username, &user.Password)

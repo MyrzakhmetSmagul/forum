@@ -26,6 +26,8 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 		return err
 	}
 
+	defer query.Close()
+
 	result, err := query.Exec(session.User.ID, session.User.Username, session.Token, session.Expiry)
 	if err != nil {
 		log.Println(err)
@@ -49,6 +51,8 @@ func (s *sessionQuery) DeleteSession(session *model.Session) error {
 		log.Println(err)
 		return err
 	}
+
+	defer query.Close()
 
 	result, err := query.Exec(session.Token, session.Expiry)
 	if err != nil {
@@ -77,6 +81,8 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 		log.Println("sessionQuery.GetSession", err)
 		return err
 	}
+
+	defer query.Close()
 
 	err = query.QueryRow(session.Token).Scan(&session.ID, &session.User.ID, &session.User.Username)
 	if err != nil {
