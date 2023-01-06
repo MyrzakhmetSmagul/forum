@@ -10,6 +10,7 @@ import (
 type CategoryQuery interface {
 	GetPostCategories(post *model.Post) error
 	SetPostCategory(post *model.Post) error
+	GetAllCategory() ([]model.Category, error)
 }
 
 type categoryQuery struct {
@@ -93,4 +94,29 @@ func (c *categoryQuery) CreateCategory(category *model.Category) error {
 
 	category.ID = id
 	return nil
+}
+
+func (c *categoryQuery) GetAllCategory() ([]model.Category, error) {
+	sqlStmt := `SELECT * FROM categories`
+	rows, err := c.db.Query(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return []model.Category{}, err
+	}
+
+	defer rows.Close()
+
+	categories := []model.Category{}
+	for rows.Next() {
+		category := model.Category{}
+		err = rows.Scan(&category.ID, &category.Category)
+		if err != nil {
+			log.Println(err)
+			return []model.Category{}, err
+		}
+
+		categories = append(categories, category)
+	}
+
+	return categories, nil
 }

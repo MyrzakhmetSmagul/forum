@@ -5,9 +5,10 @@ import (
 	"net/http"
 )
 
-func Run() error {
+func (s *ServiceServer) Run() error {
 	mux := http.NewServeMux()
-	// mux.HandleFunc("/", index)
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./template/static"))))
+	mux.HandleFunc("/", s.IndexWihtoutSession)
 
 	server := http.Server{
 		Addr:    ":8080",

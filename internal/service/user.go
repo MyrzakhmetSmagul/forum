@@ -13,6 +13,12 @@ type userService struct {
 	repository.UserQuery
 }
 
+func NewUserService(dao repository.DAO) UserService {
+	return &userService{
+		dao.NewUserQuery(),
+	}
+}
+
 func (us *userService) GetUserInfo(user *model.User) error {
 	return us.UserQuery.GetUserInfo(user)
 }

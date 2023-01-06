@@ -10,7 +10,14 @@ import (
 type PostService interface {
 	CreatePost(post *model.Post) error
 	GetPost(post *model.Post) error
+	CreateComment(comment *model.Comment) error
 	GetPostComments(post *model.Post) error
+	GetAllPosts() ([]model.Post, error)
+	PostLike(reaction *model.PostReaction) error
+	PostDislike(reaction *model.PostReaction) error
+	CommenSettLike(reaction *model.CommentReaction) error
+	CommentSetDislike(reaction *model.CommentReaction) error
+	GetAllCategory() ([]model.Category, error)
 }
 
 type postService struct {
@@ -18,6 +25,17 @@ type postService struct {
 	repository.PostReactionQuery
 	repository.CommentQuery
 	repository.CommentReactionQuery
+	repository.CategoryQuery
+}
+
+func NewPostService(dao repository.DAO) PostService {
+	return &postService{
+		PostQuery:            dao.NewPostQuery(),
+		PostReactionQuery:    dao.NewPostReactionQuery(),
+		CommentQuery:         dao.NewCommentQuery(),
+		CommentReactionQuery: dao.NewCommentReactionQuery(),
+		CategoryQuery:        dao.NewCategoryQuery(),
+	}
 }
 
 func (p *postService) CreatePost(post *model.Post) error {
@@ -62,6 +80,10 @@ func (p *postService) GetPostComments(post *model.Post) error {
 	return nil
 }
 
+func (p *postService) GetAllPosts() ([]model.Post, error) {
+	return p.PostQuery.GetAllPosts()
+}
+
 func (p *postService) PostLike(reaction *model.PostReaction) error {
 	return p.PostReactionQuery.PostSetLike(reaction)
 }
@@ -76,4 +98,8 @@ func (p *postService) CommenSettLike(reaction *model.CommentReaction) error {
 
 func (p *postService) CommentSetDislike(reaction *model.CommentReaction) error {
 	return p.CommentReactionQuery.CommentSetDislike(reaction)
+}
+
+func (p *postService) GetAllCategory() ([]model.Category, error) {
+	return p.CategoryQuery.GetAllCategory()
 }

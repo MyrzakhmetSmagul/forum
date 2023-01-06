@@ -10,6 +10,7 @@ import (
 type PostQuery interface {
 	CreatePost(post *model.Post) error
 	GetPost(post *model.Post) error
+	GetAllPosts() ([]model.Post, error)
 }
 
 type postQuery struct {
