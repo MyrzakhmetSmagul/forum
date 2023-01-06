@@ -14,6 +14,7 @@ type UserQuery interface {
 	DeleteUser(userID int64) error
 	UserVerification(user *model.User) error
 	IsExistUser(user *model.User) (bool, error)
+	GetUserInfo(user *model.User) error
 }
 
 type userQuery struct {
@@ -99,4 +100,21 @@ func (u *userQuery) IsExistUser(user *model.User) (bool, error) {
 	}
 
 	return exist, nil
+}
+
+func (u *userQuery) GetUserInfo(user *model.User) error {
+	sqlStmt := `SELECT username, email, password FROM users WHERE user_id=?`
+	query, err := u.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = query.QueryRow(user.ID).Scan(&user.Username, &user.Email, &user.Password)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }

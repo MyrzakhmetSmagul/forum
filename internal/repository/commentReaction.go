@@ -17,6 +17,30 @@ type commentReactionQuery struct {
 	db *sql.DB
 }
 
+func (cr *commentReactionQuery) CreateReactionToComment(reaction *model.CommentReaction) error {
+	sqlStmt := `INSERT INTO comments_likes_dislikes(comment_id,user_id, like, dislike)VALUES(?,?,?,?)`
+	query, err := cr.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	res, err := query.Exec(reaction.Comment.ID, reaction.User.ID, 0, 0)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	reaction.ID = id
+	return nil
+}
+
 func (cr *commentReactionQuery) CommentLike(reaction *model.CommentReaction) error {
 	var sqlStmt string
 	err := cr.GetUserReactionToComment(reaction)
@@ -113,6 +137,10 @@ func (cr *commentReactionQuery) GetUserReactionToComment(reaction *model.Comment
 
 	err = query.QueryRow(reaction.Comment.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return cr.CreateReactionToComment(reaction)
+		}
+
 		log.Println(err)
 		return err
 	}
