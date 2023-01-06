@@ -41,7 +41,7 @@ func (c *categoryQuery) GetPostCategories(post *model.Post) error {
 
 	for rows.Next() {
 		var category model.Category
-		rows.Scan(&category.CategoryID, &category.Category)
+		rows.Scan(&category.ID, &category.Category)
 		post.Categories = append(post.Categories, category)
 	}
 
@@ -59,12 +59,38 @@ func (c *categoryQuery) SetPostCategory(post *model.Post) error {
 	defer query.Close()
 
 	for i := 0; i < len(post.Categories); i++ {
-		_, err = query.Exec(post.Categories[i].CategoryID, post.Categories[i].Category)
+		_, err = query.Exec(post.Categories[i].ID, post.Categories[i].Category)
 		if err != nil {
 			log.Printf("can't set post categories,\nPost_id = %d, category = %s, number = %d\n ERROR: %s", post.ID, post.Categories[i].Category, i, err.Error())
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (c *categoryQuery) CreateCategory(category *model.Category) error {
+	sqlStmt := `INSERT INTO categories(category)VALUES(?)`
+	query, err := c.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer query.Close()
+
+	res, err := query.Exec(category.ID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	category.ID = id
 	return nil
 }

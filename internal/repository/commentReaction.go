@@ -9,21 +9,24 @@ import (
 )
 
 type CommentReactionQuery interface {
-	CommentLike(reaction *model.PostReaction) error
-	CommentDislike(reaction *model.PostReaction) error
+	CommentSetLike(reaction *model.CommentReaction) error
+	CommentSetDislike(reaction *model.CommentReaction) error
+	GetCommentLikesDislikes(comment *model.Comment) error
 }
 
 type commentReactionQuery struct {
 	db *sql.DB
 }
 
-func (cr *commentReactionQuery) CreateReactionToComment(reaction *model.CommentReaction) error {
+func (cr *commentReactionQuery) createReactionToComment(reaction *model.CommentReaction) error {
 	sqlStmt := `INSERT INTO comments_likes_dislikes(comment_id,user_id, like, dislike)VALUES(?,?,?,?)`
 	query, err := cr.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
+	defer query.Close()
 
 	res, err := query.Exec(reaction.Comment.ID, reaction.User.ID, 0, 0)
 	if err != nil {
@@ -41,7 +44,7 @@ func (cr *commentReactionQuery) CreateReactionToComment(reaction *model.CommentR
 	return nil
 }
 
-func (cr *commentReactionQuery) CommentLike(reaction *model.CommentReaction) error {
+func (cr *commentReactionQuery) CommentSetLike(reaction *model.CommentReaction) error {
 	var sqlStmt string
 	err := cr.GetUserReactionToComment(reaction)
 	if err != nil {
@@ -72,7 +75,7 @@ func (cr *commentReactionQuery) CommentLike(reaction *model.CommentReaction) err
 	return nil
 }
 
-func (cr *commentReactionQuery) CommentDislike(reaction *model.CommentReaction) error {
+func (cr *commentReactionQuery) CommentSetDislike(reaction *model.CommentReaction) error {
 	var sqlStmt string
 	err := cr.GetUserReactionToComment(reaction)
 	if err != nil {
@@ -138,11 +141,30 @@ func (cr *commentReactionQuery) GetUserReactionToComment(reaction *model.Comment
 	err = query.QueryRow(reaction.Comment.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return cr.CreateReactionToComment(reaction)
+			return cr.createReactionToComment(reaction)
 		}
 
 		log.Println(err)
 		return err
 	}
+	return nil
+}
+
+func (c *commentReactionQuery) GetCommentLikesDislikes(comment *model.Comment) error {
+	sqlStmt := `SELECT SUM(like), SUM(dislike) FROM comments_likes_dislikes WHERE comment_id=?`
+	query, err := c.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer query.Close()
+
+	err = query.QueryRow(comment.ID).Scan(&comment.Like, &comment.Dislike)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }

@@ -7,4 +7,6 @@ type Post struct {
 	User       User
 	Comments   []Comment
 	Categories []Category
+	Like       int
+	Dislike    int
 }

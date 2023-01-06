@@ -110,6 +110,8 @@ func (u *userQuery) GetUserInfo(user *model.User) error {
 		return err
 	}
 
+	defer query.Close()
+
 	err = query.QueryRow(user.ID).Scan(&user.Username, &user.Email, &user.Password)
 	if err != nil {
 		log.Println(err)

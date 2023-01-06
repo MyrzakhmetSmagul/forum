@@ -60,3 +60,27 @@ func (p *postQuery) GetPost(post *model.Post) error {
 
 	return nil
 }
+
+func (p *postQuery) GetAllPosts() ([]model.Post, error) {
+	sqlStmt := `SELECT * FROM posts`
+	rows, err := p.db.Query(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return []model.Post{}, err
+	}
+
+	defer rows.Close()
+
+	posts := []model.Post{}
+	for rows.Next() {
+		post := model.Post{}
+		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
+		if err != nil {
+			log.Println(err)
+			return []model.Post{}, err
+		}
+
+		posts = append(posts, post)
+	}
+	return posts, nil
+}

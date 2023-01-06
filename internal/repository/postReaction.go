@@ -9,22 +9,25 @@ import (
 )
 
 type PostReactionQuery interface {
-	CreateReactionToPost(reaction *model.PostReaction) error
-	PostLike(reaction *model.PostReaction) error
-	PostDislike(reaction *model.PostReaction) error
+	PostSetLike(reaction *model.PostReaction) error
+	PostSetDislike(reaction *model.PostReaction) error
+	GetUserReactionToPost(reaction *model.PostReaction) error
+	GetPostReactions(post *model.Post) error
 }
 
 type postReactionQuery struct {
 	db *sql.DB
 }
 
-func (pr *postReactionQuery) CreateReactionToPost(reaction *model.PostReaction) error {
+func (pr *postReactionQuery) createReactionToPost(reaction *model.PostReaction) error {
 	sqlStmt := `INSERT INTO posts_likes_dislikes(post_id,user_id, like, dislike)VALUES(?,?,?,?)`
 	query, err := pr.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
+	defer query.Close()
 
 	res, err := query.Exec(reaction.Post.ID, reaction.User.ID, 0, 0)
 	if err != nil {
@@ -42,7 +45,7 @@ func (pr *postReactionQuery) CreateReactionToPost(reaction *model.PostReaction) 
 	return nil
 }
 
-func (pr *postReactionQuery) PostLike(reaction *model.PostReaction) error {
+func (pr *postReactionQuery) PostSetLike(reaction *model.PostReaction) error {
 	var sqlStmt string
 	err := pr.GetUserReactionToPost(reaction)
 	if err != nil {
@@ -76,7 +79,7 @@ func (pr *postReactionQuery) PostLike(reaction *model.PostReaction) error {
 	return nil
 }
 
-func (pr *postReactionQuery) PostDislike(reaction *model.PostReaction) error {
+func (pr *postReactionQuery) PostSetDislike(reaction *model.PostReaction) error {
 	var sqlStmt string
 	err := pr.GetUserReactionToPost(reaction)
 	if err != nil {
@@ -142,9 +145,27 @@ func (pr *postReactionQuery) GetUserReactionToPost(reaction *model.PostReaction)
 	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return pr.CreateReactionToPost(reaction)
+			return pr.createReactionToPost(reaction)
 		}
 
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (p *postReactionQuery) GetPostReactions(post *model.Post) error {
+	sqlStmt := `SELECT SUM(like), SUM(dislike) FROM posts_likes_dislikes WHERE comment_id=?`
+	query, err := p.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer query.Close()
+
+	err = query.QueryRow(post.ID).Scan(&post.Like, &post.Dislike)
+	if err != nil {
 		log.Println(err)
 		return err
 	}

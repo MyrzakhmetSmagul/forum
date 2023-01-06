@@ -8,6 +8,8 @@ import (
 )
 
 type CommentQuery interface {
+	CreateComment(comment *model.Comment) error
+	GetPostComments(post *model.Post) error
 }
 
 type commentQuery struct {
@@ -22,7 +24,9 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 		return err
 	}
 
-	result, err := query.Exec(comment.Post.ID, comment.User.ID, comment.User.Username, comment.Message)
+	defer query.Close()
+
+	result, err := query.Exec(comment.PostID, comment.UserID, comment.Username, comment.Message)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -35,5 +39,37 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 	}
 
 	comment.ID = id
+	return nil
+}
+
+func (c *commentQuery) GetPostComments(post *model.Post) error {
+	sqlStmt := `SELECT comment_id, user_id, username, message FROM comments WHERE post_id=?`
+	query, err := c.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer query.Close()
+
+	rows, err := query.Query(post.ID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		comment := model.Comment{}
+		err = rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Message)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		post.Comments = append(post.Comments, comment)
+	}
+
 	return nil
 }
