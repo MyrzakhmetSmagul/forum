@@ -116,8 +116,35 @@ func (pr *postReactionQuery) GetUserReactionToPost(reaction *model.PostReaction)
 
 	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return pr.CreateReactionToPost(reaction)
+		}
 		log.Println(err)
 		return err
 	}
+	return nil
+}
+
+func (pr *postReactionQuery) CreateReactionToPost(reaction *model.PostReaction) error {
+	sqlStmt := `INSERT INTO posts_likes_dislikes(post_id,user_id, like, dislike)VALUES(?,?,?,?)`
+	query, err := pr.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	res, err := query.Exec(reaction.Post.ID, reaction.User.ID, 0, 0)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	reaction.ID = id
 	return nil
 }

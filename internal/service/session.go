@@ -22,13 +22,13 @@ func NewSessionService(dao repository.DAO) SessionService {
 }
 
 func (s *sessionService) CreateSession(session *model.Session) error {
-	return s.CreateSession(session)
+	return s.SessionQuery.CreateSession(session)
 }
 
 func (s *sessionService) DeleteSession(session *model.Session) error {
-	return s.DeleteSession(session)
+	return s.SessionQuery.DeleteSession(session)
 }
 
 func (s *sessionService) GetSession(session *model.Session) error {
-	return s.GetSession(session)
+	return s.SessionQuery.GetSession(session)
 }
