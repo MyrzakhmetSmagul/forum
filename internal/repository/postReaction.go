@@ -8,18 +8,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-type PostReactionQuery interface {
-	PostSetLike(reaction *model.PostReaction) error
-	PostSetDislike(reaction *model.PostReaction) error
-	GetUserReactionToPost(reaction *model.PostReaction) error
-	GetPostReactions(post *model.Post) error
-}
-
-type postReactionQuery struct {
-	db *sql.DB
-}
-
-func (pr *postReactionQuery) createReactionToPost(reaction *model.PostReaction) error {
+func (pr *postQuery) createReactionToPost(reaction *model.PostReaction) error {
 	sqlStmt := `INSERT INTO posts_likes_dislikes(post_id,user_id, like, dislike)VALUES(?,?,?,?)`
 	query, err := pr.db.Prepare(sqlStmt)
 	if err != nil {
@@ -45,9 +34,9 @@ func (pr *postReactionQuery) createReactionToPost(reaction *model.PostReaction) 
 	return nil
 }
 
-func (pr *postReactionQuery) PostSetLike(reaction *model.PostReaction) error {
+func (pr *postQuery) PostSetLike(reaction *model.PostReaction) error {
 	var sqlStmt string
-	err := pr.GetUserReactionToPost(reaction)
+	err := pr.getUserReactionToPost(reaction)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -79,9 +68,9 @@ func (pr *postReactionQuery) PostSetLike(reaction *model.PostReaction) error {
 	return nil
 }
 
-func (pr *postReactionQuery) PostSetDislike(reaction *model.PostReaction) error {
+func (pr *postQuery) PostSetDislike(reaction *model.PostReaction) error {
 	var sqlStmt string
-	err := pr.GetUserReactionToPost(reaction)
+	err := pr.getUserReactionToPost(reaction)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -113,7 +102,7 @@ func (pr *postReactionQuery) PostSetDislike(reaction *model.PostReaction) error 
 	return nil
 }
 
-func (pr *postReactionQuery) updatePostReaction(sqlStmt string, db *sql.DB, reaction *model.PostReaction) error {
+func (pr *postQuery) updatePostReaction(sqlStmt string, db *sql.DB, reaction *model.PostReaction) error {
 	result, err := db.Exec(sqlStmt, reaction.ID)
 	if err != nil {
 		log.Println(err)
@@ -132,7 +121,7 @@ func (pr *postReactionQuery) updatePostReaction(sqlStmt string, db *sql.DB, reac
 	return nil
 }
 
-func (pr *postReactionQuery) GetUserReactionToPost(reaction *model.PostReaction) error {
+func (pr *postQuery) getUserReactionToPost(reaction *model.PostReaction) error {
 	sqlStmt := `SELECT id, like, dislike FROM posts_likes_dislikes WHERE post_id=? and user_id=?`
 	query, err := pr.db.Prepare(sqlStmt)
 	if err != nil {
@@ -154,8 +143,8 @@ func (pr *postReactionQuery) GetUserReactionToPost(reaction *model.PostReaction)
 	return nil
 }
 
-func (p *postReactionQuery) GetPostReactions(post *model.Post) error {
-	sqlStmt := `SELECT SUM(like), SUM(dislike) FROM posts_likes_dislikes WHERE comment_id=?`
+func (p *postQuery) GetPostLikesDislikes(post *model.Post) error {
+	sqlStmt := `SELECT COALESCE(SUM(like), 0), COALESCE(SUM(dislike), 0) FROM posts_likes_dislikes WHERE post_id=?`
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)

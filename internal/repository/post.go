@@ -11,6 +11,11 @@ type PostQuery interface {
 	CreatePost(post *model.Post) error
 	GetPost(post *model.Post) error
 	GetAllPosts() ([]model.Post, error)
+	PostSetLike(reaction *model.PostReaction) error
+	PostSetDislike(reaction *model.PostReaction) error
+	SetPostCategory(post *model.Post) error
+	CreateCategory(category *model.Category) error
+	GetAllCategory() ([]model.Category, error)
 }
 
 type postQuery struct {
@@ -59,6 +64,18 @@ func (p *postQuery) GetPost(post *model.Post) error {
 		return err
 	}
 
+	err = p.GetPostCategories(post)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = p.GetPostLikesDislikes(post)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
@@ -76,6 +93,18 @@ func (p *postQuery) GetAllPosts() ([]model.Post, error) {
 	for rows.Next() {
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
+		if err != nil {
+			log.Println(err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostCategories(&post)
+		if err != nil {
+			log.Println(err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
 			log.Println(err)
 			return []model.Post{}, err

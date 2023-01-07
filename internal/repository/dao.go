@@ -5,11 +5,8 @@ import "database/sql"
 type DAO interface {
 	NewUserQuery() UserQuery
 	NewSessionQuery() SessionQuery
-	NewCategoryQuery() CategoryQuery
 	NewCommentQuery() CommentQuery
-	NewCommentReactionQuery() CommentReactionQuery
 	NewPostQuery() PostQuery
-	NewPostReactionQuery() PostReactionQuery
 }
 
 type dao struct {
@@ -34,31 +31,14 @@ func (dao *dao) NewSessionQuery() SessionQuery {
 	}
 }
 
-func (dao *dao) NewCategoryQuery() CategoryQuery {
-	return &categoryQuery{
-		db: dao.db,
-	}
-}
-
 func (dao *dao) NewCommentQuery() CommentQuery {
 	return &commentQuery{
 		db: dao.db,
 	}
 }
 
-func (dao *dao) NewCommentReactionQuery() CommentReactionQuery {
-	return &commentReactionQuery{
-		db: dao.db,
-	}
-}
-
 func (dao *dao) NewPostQuery() PostQuery {
 	return &postQuery{
-		db: dao.db,
-	}
-}
-func (dao *dao) NewPostReactionQuery() PostReactionQuery {
-	return &postReactionQuery{
 		db: dao.db,
 	}
 }

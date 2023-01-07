@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -10,6 +11,8 @@ import (
 type CommentQuery interface {
 	CreateComment(comment *model.Comment) error
 	GetPostComments(post *model.Post) error
+	CommentSetLike(reaction *model.CommentReaction) error
+	CommentSetDislike(reaction *model.CommentReaction) error
 }
 
 type commentQuery struct {
@@ -67,6 +70,12 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 			log.Println(err)
 			return err
 		}
+		fmt.Println("$$$$$$$$$\n", comment.ID, comment.UserID, comment.Username, comment.Message, "\n$$$$$$$$$$$$$$")
+		// err = c.getCommentLikesDislikes(&comment)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return err
+		// }
 
 		post.Comments = append(post.Comments, comment)
 	}

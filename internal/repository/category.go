@@ -1,23 +1,12 @@
 package repository
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-type CategoryQuery interface {
-	GetPostCategories(post *model.Post) error
-	SetPostCategory(post *model.Post) error
-	GetAllCategory() ([]model.Category, error)
-}
-
-type categoryQuery struct {
-	db *sql.DB
-}
-
-func (c *categoryQuery) GetPostCategories(post *model.Post) error {
+func (c *postQuery) GetPostCategories(post *model.Post) error {
 	sqlStmt := `SELECT pc.category_id, c.category
 	FROM categories c
 	INNER JOIN post_categories pc
@@ -49,7 +38,7 @@ func (c *categoryQuery) GetPostCategories(post *model.Post) error {
 	return nil
 }
 
-func (c *categoryQuery) SetPostCategory(post *model.Post) error {
+func (c *postQuery) SetPostCategory(post *model.Post) error {
 	sqlStmt := `INSERT INTO post_categories(post_id, category_id) VALUES(?,?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
@@ -70,7 +59,7 @@ func (c *categoryQuery) SetPostCategory(post *model.Post) error {
 	return nil
 }
 
-func (c *categoryQuery) CreateCategory(category *model.Category) error {
+func (c *postQuery) CreateCategory(category *model.Category) error {
 	sqlStmt := `INSERT INTO categories(category)VALUES(?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
@@ -96,7 +85,7 @@ func (c *categoryQuery) CreateCategory(category *model.Category) error {
 	return nil
 }
 
-func (c *categoryQuery) GetAllCategory() ([]model.Category, error) {
+func (c *postQuery) GetAllCategory() ([]model.Category, error) {
 	sqlStmt := `SELECT * FROM categories`
 	rows, err := c.db.Query(sqlStmt)
 	if err != nil {

@@ -15,26 +15,20 @@ type PostService interface {
 	GetAllPosts() ([]model.Post, error)
 	PostLike(reaction *model.PostReaction) error
 	PostDislike(reaction *model.PostReaction) error
-	CommenSettLike(reaction *model.CommentReaction) error
+	CommentSetLike(reaction *model.CommentReaction) error
 	CommentSetDislike(reaction *model.CommentReaction) error
 	GetAllCategory() ([]model.Category, error)
 }
 
 type postService struct {
 	repository.PostQuery
-	repository.PostReactionQuery
 	repository.CommentQuery
-	repository.CommentReactionQuery
-	repository.CategoryQuery
 }
 
 func NewPostService(dao repository.DAO) PostService {
 	return &postService{
-		PostQuery:            dao.NewPostQuery(),
-		PostReactionQuery:    dao.NewPostReactionQuery(),
-		CommentQuery:         dao.NewCommentQuery(),
-		CommentReactionQuery: dao.NewCommentReactionQuery(),
-		CategoryQuery:        dao.NewCategoryQuery(),
+		PostQuery:    dao.NewPostQuery(),
+		CommentQuery: dao.NewCommentQuery(),
 	}
 }
 
@@ -46,16 +40,10 @@ func (p *postService) GetPost(post *model.Post) error {
 	err := p.PostQuery.GetPost(post)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return err
 	}
 
-	err = p.PostReactionQuery.GetPostReactions(post)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	return nil
+	return p.CommentQuery.GetPostComments(post)
 }
 
 func (p *postService) CreateComment(comment *model.Comment) error {
@@ -63,43 +51,43 @@ func (p *postService) CreateComment(comment *model.Comment) error {
 }
 
 func (p *postService) GetPostComments(post *model.Post) error {
-	err := p.CommentQuery.GetPostComments(post)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	for i := 0; i < len(post.Comments); i++ {
-		err = p.CommentReactionQuery.GetCommentLikesDislikes(&post.Comments[i])
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-	}
-
-	return nil
+	return p.CommentQuery.GetPostComments(post)
 }
 
 func (p *postService) GetAllPosts() ([]model.Post, error) {
-	return p.PostQuery.GetAllPosts()
+	posts, err := p.PostQuery.GetAllPosts()
+	if err != nil {
+		log.Println(err)
+		return []model.Post{}, err
+	}
+
+	for i := 0; i < len(posts); i++ {
+		err = p.GetPostComments(&posts[i])
+		if err != nil {
+			log.Println(err)
+			return []model.Post{}, err
+		}
+	}
+
+	return posts, nil
 }
 
 func (p *postService) PostLike(reaction *model.PostReaction) error {
-	return p.PostReactionQuery.PostSetLike(reaction)
+	return p.PostQuery.PostSetLike(reaction)
 }
 
 func (p *postService) PostDislike(reaction *model.PostReaction) error {
-	return p.PostReactionQuery.PostSetDislike(reaction)
+	return p.PostQuery.PostSetDislike(reaction)
 }
 
-func (p *postService) CommenSettLike(reaction *model.CommentReaction) error {
-	return p.CommentReactionQuery.CommentSetLike(reaction)
+func (p *postService) CommentSetLike(reaction *model.CommentReaction) error {
+	return p.CommentQuery.CommentSetLike(reaction)
 }
 
 func (p *postService) CommentSetDislike(reaction *model.CommentReaction) error {
-	return p.CommentReactionQuery.CommentSetDislike(reaction)
+	return p.CommentQuery.CommentSetDislike(reaction)
 }
 
 func (p *postService) GetAllCategory() ([]model.Category, error) {
-	return p.CategoryQuery.GetAllCategory()
+	return p.PostQuery.GetAllCategory()
 }
