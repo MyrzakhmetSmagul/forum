@@ -8,7 +8,9 @@ import (
 func (s *ServiceServer) Run() error {
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./template/static"))))
-	mux.HandleFunc("/", s.IndexWihtoutSession)
+	mux.HandleFunc("/", s.authMiddleware(s.IndexWithSession))
+	mux.HandleFunc("/signIn", s.authMiddleware(s.SignIn))
+	mux.HandleFunc("/signUp", s.authMiddleware(s.SignUp))
 
 	server := http.Server{
 		Addr:    ":8080",

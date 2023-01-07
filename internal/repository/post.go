@@ -16,6 +16,7 @@ type PostQuery interface {
 	SetPostCategory(post *model.Post) error
 	CreateCategory(category *model.Category) error
 	GetAllCategory() ([]model.Category, error)
+	GetPostsOfCategory(category model.Category) ([]model.Post, error)
 }
 
 type postQuery struct {
@@ -112,5 +113,52 @@ func (p *postQuery) GetAllPosts() ([]model.Post, error) {
 
 		posts = append(posts, post)
 	}
+	return posts, nil
+}
+
+func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, error) {
+	sqlStmt := `SELECT posts.post_id, posts.title, posts.content, posts.user_id, posts.username FROM posts
+	INNER JOIN post_categories ON posts.post_id = post_categories.post_id
+	INNER JOIN categories ON post_categories.category_id = categories.category_id
+	WHERE categories.category_id = ?`
+
+	query, err := p.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println("GetPostsOfCategory ERROR:", err)
+		return []model.Post{}, err
+	}
+
+	defer query.Close()
+
+	posts := []model.Post{}
+	rows, err := query.Query(category.ID)
+	if err != nil {
+		log.Println("GetPostsOfCategory ERROR:", err)
+		return []model.Post{}, err
+	}
+
+	for rows.Next() {
+		post := model.Post{}
+		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
+		if err != nil {
+			log.Println("GetPostsOfCategory ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostCategories(&post)
+		if err != nil {
+			log.Println("GetPostsOfCategory ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostLikesDislikes(&post)
+		if err != nil {
+			log.Println("GetPostsOfCategory ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		posts = append(posts, post)
+	}
+
 	return posts, nil
 }

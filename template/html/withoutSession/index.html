@@ -1,3 +1,4 @@
+{{define "index"}}
 <!DOCTYPE html>
 <html>
   <head>
@@ -7,10 +8,15 @@
   </head>
   <body>
     <div class="header">
-      <div class="categories">
-        {{ range .Categories}}
-        <a href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
-        {{end}}
+      <div class="menu">
+        <a class="node" href="/">Home</a>
+        <div class="categories">
+          {{ range .Categories}}
+          <a href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
+          {{end}}
+        </div>
+        <a class="node" href="/signIn">Sign in</a>
+        <a class="node" href="/signUp">Sign up</a>
       </div>
     </div>
     <div class="posts">
@@ -19,27 +25,15 @@
         <h3>{{.Title}}</h3>
         <p>{{.Content}}</p>
         <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
-        {{ range .Categories}}
-        <a href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
-        {{end}}
-        <p>
-          <a href="/postLike?ID={{.ID}}&user_ID{{.User.ID}}">Like</a> {{.Like}}
-          <a href="/postDislike?ID={{.ID}}&user_ID{{.User.ID}}">Disike</a> {{.Dislike}}
-        </p>
-        <div class="comments">
-          {{ range .Comments}}
-          <div class="comment" id="{{.ID}}">
-            <p>{{.Username}}</p>
-            <p>{{.Message}}</p>
-            <p>
-              <a href="/commentLike?ID={{.ID}}&user_ID{{.UserID}}">Like</a> {{.Like}}
-              <a href="/commentDislike?ID={{.ID}}&user_ID{{.UserID}}">Dislike</a> {{.Dislike}}
-            </p>
-          </div>
+        <div class="post-categories"></div>
+          {{ range .Categories}}
+          <a class="post-category" href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
           {{end}}
         </div>
+        <p>Like {{.Like}} Disike {{.Dislike}}</p>
       </div>
       {{end}}
     </div>
   </body>
 </html>
+{{end}}

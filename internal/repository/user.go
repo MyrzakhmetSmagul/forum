@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -22,7 +23,7 @@ type userQuery struct {
 }
 
 func (u *userQuery) CreateUser(user *model.User) error {
-	sqlStmt := `INSERT INTO users(uname, email, passwd) 
+	sqlStmt := `INSERT INTO users(username, email, password) 
 	VALUES(?, ?, ?)`
 
 	query, err := u.db.Prepare(sqlStmt)
@@ -47,7 +48,7 @@ func (u *userQuery) CreateUser(user *model.User) error {
 }
 
 func (u *userQuery) UserVerification(user *model.User) error {
-	sqlStmt := `SELECT user_id, username, password  FROM users WHERE email=?`
+	sqlStmt := `SELECT user_id, username, password FROM users WHERE email=?`
 	query, err := u.db.Prepare(sqlStmt)
 	if err != nil {
 		return err
@@ -55,17 +56,21 @@ func (u *userQuery) UserVerification(user *model.User) error {
 
 	defer query.Close()
 
+	fmt.Println(user.Email)
 	tempPasswd := user.Password
 	err = query.QueryRow(user.Email).Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
-		log.Println(err)
+		log.Println("UserVerification", err)
+		if err.Error() == "sql: no rows in result ser" {
+			return errors.New("the user's email or password is incorrect")
+		}
 		return err
 	}
 
-	bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(tempPasswd))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(tempPasswd))
 	if err != nil {
-		log.Println("the user's password is incorrect", err)
-		return errors.New("the user's password is incorrect")
+		log.Println("the user's email or password is incorrect", err)
+		return errors.New("the user's email or password is incorrect")
 	}
 
 	return nil
@@ -91,11 +96,12 @@ func (u *userQuery) DeleteUser(userID int64) error {
 }
 
 func (u *userQuery) IsExistUser(user *model.User) (bool, error) {
-	sqlStmt := `SELECT EXISTS(SELECT 1 FROM users WHERE uname=? OR email=? LIMIT 1)`
+	sqlStmt := `SELECT EXISTS(SELECT 1 FROM users WHERE username=? OR email=? LIMIT 1)`
 	var exist bool
+
 	err := u.db.QueryRow(sqlStmt, user.Username, user.Email).Scan(&exist)
 	if err != nil {
-		log.Println(err)
+		log.Println("is exist user query ERROR:", err)
 		return false, err
 	}
 

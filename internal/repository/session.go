@@ -19,7 +19,7 @@ type sessionQuery struct {
 }
 
 func (s *sessionQuery) CreateSession(session *model.Session) error {
-	sqlStmt := `INSERT INTO sessions(user_id, username, token, expiry) VALUES(?,?,?,?)`
+	sqlStmt := `INSERT INTO sessions(user_id, token, expiry) VALUES(?,?,?)`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -28,7 +28,7 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 
 	defer query.Close()
 
-	result, err := query.Exec(session.User.ID, session.User.Username, session.Token, session.Expiry)
+	result, err := query.Exec(session.User.ID, session.Token, session.Expiry)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -41,11 +41,12 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 	}
 
 	session.ID = id
+	log.Println("CREATE SESSION WAS SUCCESFULE")
 	return nil
 }
 
 func (s *sessionQuery) DeleteSession(session *model.Session) error {
-	sqlStmt := `DELETE FROM sessions WHERE token=? AND expiry=?`
+	sqlStmt := `DELETE FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -54,7 +55,7 @@ func (s *sessionQuery) DeleteSession(session *model.Session) error {
 
 	defer query.Close()
 
-	result, err := query.Exec(session.Token, session.Expiry)
+	result, err := query.Exec(session.Token)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -75,7 +76,7 @@ func (s *sessionQuery) DeleteSession(session *model.Session) error {
 }
 
 func (s *sessionQuery) GetSession(session *model.Session) error {
-	sqlStmt := `SELECT session_id, user_id, username  FROM users WHERE token=?`
+	sqlStmt := `SELECT session_id, user_id, expiry FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println("sessionQuery.GetSession", err)
@@ -84,10 +85,11 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 
 	defer query.Close()
 
-	err = query.QueryRow(session.Token).Scan(&session.ID, &session.User.ID, &session.User.Username)
+	err = query.QueryRow(session.Token).Scan(&session.ID, &session.User.ID, &session.Expiry)
 	if err != nil {
 		log.Println("sessionQuery.GetSession", err)
 		return err
 	}
+	log.Println("GET SESSION WAS SUCCESFULE")
 	return nil
 }
