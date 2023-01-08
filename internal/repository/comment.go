@@ -49,7 +49,7 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 	sqlStmt := `SELECT comment_id, user_id, username, message FROM comments WHERE post_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetPostComments", err)
 		return err
 	}
 
@@ -57,7 +57,7 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 
 	rows, err := query.Query(post.ID)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetPostComments", err)
 		return err
 	}
 
@@ -67,15 +67,16 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 		comment := model.Comment{}
 		err = rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Message)
 		if err != nil {
-			log.Println(err)
+			log.Println("GetPostComments", err)
 			return err
 		}
+
 		fmt.Println("$$$$$$$$$\n", comment.ID, comment.UserID, comment.Username, comment.Message, "\n$$$$$$$$$$$$$$")
-		// err = c.getCommentLikesDislikes(&comment)
-		// if err != nil {
-		// 	log.Println(err)
-		// 	return err
-		// }
+		err = c.getCommentLikesDislikes(&comment)
+		if err != nil {
+			log.Println("getCOmmentLikesDislikes", err)
+			return err
+		}
 
 		post.Comments = append(post.Comments, comment)
 	}

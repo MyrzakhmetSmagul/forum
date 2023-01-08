@@ -8,7 +8,7 @@ import (
 )
 
 func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus model.Error) {
-	t, err := template.ParseFiles("./template/html/error.html")
+	t, err := template.ParseFiles("./templates/html/error.html")
 	if err != nil {
 		http.Error(w, errorStatus.StatusText, errorStatus.StatusCode)
 		return

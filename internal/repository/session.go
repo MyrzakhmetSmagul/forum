@@ -12,6 +12,7 @@ type SessionQuery interface {
 	CreateSession(session *model.Session) error
 	DeleteSession(session *model.Session) error
 	GetSession(session *model.Session) error
+	GetSessionByUserID(session *model.Session) error
 }
 
 type sessionQuery struct {
@@ -46,10 +47,11 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 }
 
 func (s *sessionQuery) DeleteSession(session *model.Session) error {
+	log.Println(session.Token)
 	sqlStmt := `DELETE FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
+		log.Println("DeleteSession ERROR", err)
 		return err
 	}
 
@@ -57,13 +59,13 @@ func (s *sessionQuery) DeleteSession(session *model.Session) error {
 
 	result, err := query.Exec(session.Token)
 	if err != nil {
-		log.Println(err)
+		log.Println("DeleteSession ERROR", err)
 		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Println(err)
+		log.Println("DeleteSession ERROR", err)
 		return err
 	}
 
@@ -91,5 +93,24 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 		return err
 	}
 	log.Println("GET SESSION WAS SUCCESFULE")
+	return nil
+}
+
+func (s *sessionQuery) GetSessionByUserID(session *model.Session) error {
+	sqlStmt := `SELECT session_id, token, expiry FROM sessions WHERE user_id=?`
+	query, err := s.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println("sessionQuery.GetSessionByUserID", err)
+		return err
+	}
+
+	defer query.Close()
+
+	err = query.QueryRow(session.User.ID).Scan(&session.ID, &session.Token, &session.Expiry)
+	if err != nil {
+		log.Println("sessionQuery.GetSessionByUserID", err)
+		return err
+	}
+
 	return nil
 }

@@ -1,19 +1,19 @@
 package app
 
-import "github.com/MyrzakhmetSmagul/forum/internal/service"
+import "github.com/MyrzakhmetSmagul/forum/internal/services"
 
 type ServiceServer struct {
-	authService    service.AuthService
-	userService    service.UserService
-	postService    service.PostService
-	sessionService service.SessionService
+	authService    services.AuthService
+	userService    services.UserService
+	postService    services.PostService
+	sessionService services.SessionService
 }
 
 func NewServiceServer(
-	authService service.AuthService,
-	userService service.UserService,
-	postService service.PostService,
-	sessionService service.SessionService,
+	authService services.AuthService,
+	userService services.UserService,
+	postService services.PostService,
+	sessionService services.SessionService,
 ) ServiceServer {
 	return ServiceServer{
 		authService:    authService,

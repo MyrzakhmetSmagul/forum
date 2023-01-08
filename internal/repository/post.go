@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -53,27 +54,27 @@ func (p *postQuery) GetPost(post *model.Post) error {
 	sqlStmt := `SELECT title,content, user_id, username FROM posts WHERE post_id=?`
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
+		log.Println("getPost", err)
 		return err
 	}
 
 	defer query.Close()
 
-	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, post.User.ID, post.User.Username)
+	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, &post.User.ID, &post.User.Username)
 	if err != nil {
 		log.Println(err)
-		return err
+		return errors.New("getPost: " + err.Error())
 	}
 
 	err = p.GetPostCategories(post)
 	if err != nil {
-		log.Println(err)
+		log.Println("getPost", err)
 		return err
 	}
 
 	err = p.GetPostLikesDislikes(post)
 	if err != nil {
-		log.Println(err)
+		log.Println("getPost", err)
 		return err
 	}
 

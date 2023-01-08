@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -19,6 +19,6 @@ func NewUserService(dao repository.DAO) UserService {
 	}
 }
 
-func (us *userService) GetUserInfo(user *model.User) error {
-	return us.UserQuery.GetUserInfo(user)
+func (u *userService) GetUserInfo(user *model.User) error {
+	return u.UserQuery.GetUserInfo(user)
 }

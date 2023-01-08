@@ -28,6 +28,7 @@ func (u *userQuery) CreateUser(user *model.User) error {
 
 	query, err := u.db.Prepare(sqlStmt)
 	if err != nil {
+		log.Println("CreateUser ERROR:", err)
 		return err
 	}
 
@@ -35,11 +36,13 @@ func (u *userQuery) CreateUser(user *model.User) error {
 
 	result, err := query.Exec(user.Username, user.Email, user.Password)
 	if err != nil {
+		log.Println("CreateUser ERROR:", err)
 		return err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
+		log.Println("CreateUser ERROR:", err)
 		return err
 	}
 
@@ -51,6 +54,7 @@ func (u *userQuery) UserVerification(user *model.User) error {
 	sqlStmt := `SELECT user_id, username, password FROM users WHERE email=?`
 	query, err := u.db.Prepare(sqlStmt)
 	if err != nil {
+		log.Println("UserVerification ERROR:", err)
 		return err
 	}
 
@@ -80,15 +84,18 @@ func (u *userQuery) DeleteUser(userID int64) error {
 	sqlStmt := `DELETE FROM users WHERE user_id=?`
 	result, err := u.db.Exec(sqlStmt, userID)
 	if err != nil {
+		log.Println("DeleteUser ERROR:", err)
 		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		log.Println("DeleteUser ERROR:", err)
 		return err
 	}
 
 	if rowsAffected == 0 {
+		log.Println("DeleteUser ERROR:", err)
 		return errors.New("delete user was failed")
 	}
 
@@ -112,7 +119,7 @@ func (u *userQuery) GetUserInfo(user *model.User) error {
 	sqlStmt := `SELECT username, email, password FROM users WHERE user_id=?`
 	query, err := u.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetUserInfo ERROR", err)
 		return err
 	}
 
@@ -120,7 +127,7 @@ func (u *userQuery) GetUserInfo(user *model.User) error {
 
 	err = query.QueryRow(user.ID).Scan(&user.Username, &user.Email, &user.Password)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetUserInfo ERROR", err)
 		return err
 	}
 

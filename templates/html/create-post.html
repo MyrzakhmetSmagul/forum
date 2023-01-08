@@ -1,0 +1,30 @@
+{{define "create-post"}}
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Create New Post</title>
+	<link rel="icon" href="/static/image/icon.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="/static/css/create-post.css">
+</head>
+<body>
+	<h1>Create New Post</h1>
+	<form action="/newPost" method="POST">
+		<label>Title:</label>
+		<input type="text" name="title" placeholder="Enter a title for your post" required>
+		<br><br>
+		<label>Post Categories</label>
+        <div class="categories">
+            <input type="checkbox" name="categories" value="category1" />Category 1<br />
+            <input type="checkbox" name="categories" value="category2" />Category 2<br />
+            <input type="checkbox" name="categories" value="category3" />Category 3<br />
+            <input type="checkbox" name="categories" value="category4" />Category 4<br />
+            <input type="checkbox" name="categories" value="category5" />Category 5<br />
+        </div>
+		<label>Content:</label>
+		<textarea name="content" rows="5" cols="50" placeholder="Enter the content for your post" required></textarea>
+		<br><br>
+		<input type="submit" value="Create Post">
+	</form>
+</body>
+</html>
+{{end}}

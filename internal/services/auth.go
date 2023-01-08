@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"errors"
@@ -37,14 +37,23 @@ func (a *authService) SignIn(user *model.User, session *model.Session) error {
 		return err
 	}
 
+	tempSession := model.Session{User: *user}
+	err = a.SessionQuery.GetSessionByUserID(&tempSession)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		log.Println(err)
+		return err
+	} else if err == nil {
+		a.SessionQuery.DeleteSession(&tempSession)
+	}
+
 	token, err := uuid.NewV4()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	session.Token = token.String()
 	session.User = *user
+	session.Token = token.String()
 	err = a.SessionQuery.CreateSession(session)
 	if err != nil {
 		log.Println("\nuser was confirmed, CREATE SESSION ERROR:", err)

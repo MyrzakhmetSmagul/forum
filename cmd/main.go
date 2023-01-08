@@ -5,7 +5,7 @@ import (
 
 	"github.com/MyrzakhmetSmagul/forum/internal/app"
 	"github.com/MyrzakhmetSmagul/forum/internal/repository"
-	"github.com/MyrzakhmetSmagul/forum/internal/service"
+	"github.com/MyrzakhmetSmagul/forum/internal/services"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 		log.Fatal(err)
 	}
 	dao := repository.NewDao(db)
-	authService := service.NewAuthService(dao)
-	postService := service.NewPostService(dao)
-	sessionService := service.NewSessionService(dao)
-	userService := service.NewUserService(dao)
+	authService := services.NewAuthService(dao)
+	postService := services.NewPostService(dao)
+	sessionService := services.NewSessionService(dao)
+	userService := services.NewUserService(dao)
 	app := app.NewServiceServer(authService, userService, postService, sessionService)
 	err = app.Run()
 	if err != nil {

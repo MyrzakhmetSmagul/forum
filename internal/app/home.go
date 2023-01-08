@@ -19,14 +19,13 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	t, err := template.ParseFiles("./template/html/withoutSession/index.html")
+	t, err := template.ParseFiles("./templates/html/withoutSession/index.html")
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
 	categories, err := s.postService.GetAllCategory()
-
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
@@ -49,7 +48,6 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 	}
 
 	log.Println("INDEX WITHOUT SESSION WAS RENDERED")
-
 }
 
 func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request) {
@@ -63,14 +61,13 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	t, err := template.ParseFiles("./template/html/index.html")
+	t, err := template.ParseFiles("./templates/html/index.html")
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
 	categories, err := s.postService.GetAllCategory()
-
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
@@ -93,5 +90,4 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 	}
 
 	log.Println("INDEX WITH SESSION WAS RENDERED")
-
 }

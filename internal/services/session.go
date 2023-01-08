@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -31,4 +31,9 @@ func (s *sessionService) DeleteSession(session *model.Session) error {
 
 func (s *sessionService) GetSession(session *model.Session) error {
 	return s.SessionQuery.GetSession(session)
+}
+
+func (s *sessionService) GetSessionInfo(session *model.Session) (model.User, error) {
+	user := model.User{}
+	return user, nil
 }

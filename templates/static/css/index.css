@@ -33,11 +33,9 @@ body {
 }
 
 .categories {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  display: block;
   width: 200px;
+  height: 70;
   overflow: hidden;
   overflow-x: scroll;
 }
