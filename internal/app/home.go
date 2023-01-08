@@ -19,7 +19,7 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	t, err := template.ParseFiles("./templates/html/withoutSession/index.html")
+	t, err := template.ParseFiles("./templates/html/unauth-index.html")
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
@@ -46,8 +46,6 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
-
-	log.Println("INDEX WITHOUT SESSION WAS RENDERED")
 }
 
 func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +86,4 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
-
-	log.Println("INDEX WITH SESSION WAS RENDERED")
 }

@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -150,8 +149,6 @@ func (c *commentQuery) getCommentLikesDislikes(comment *model.Comment) error {
 	}
 
 	defer query.Close()
-
-	fmt.Println("#########\n", comment.ID, "\n#########")
 
 	err = query.QueryRow(comment.ID).Scan(&comment.Like, &comment.Dislike)
 	if err != nil {

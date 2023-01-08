@@ -25,7 +25,7 @@ func (s *ServiceServer) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		err = s.sessionService.GetSession(&session)
 		if err != nil {
 			if err.Error() == "sql: no rows in result set" {
-				if r.URL.Path == "/signIn" || r.URL.Path == "/signUp" {
+				if r.URL.Path == "/signIn" || r.URL.Path == "/signUp" || r.URL.Path == "/post" {
 					next.ServeHTTP(w, r)
 					return
 				}

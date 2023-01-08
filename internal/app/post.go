@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -100,7 +99,8 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("authToken"); err != nil {
+	cookie, err := r.Cookie("authToken")
+	if err != nil {
 		s.PostUnauth(w, r)
 		return
 	}
@@ -109,6 +109,51 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
 	}
+
+	if r.URL.Query().Get("ID") == "" {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	session := model.Session{Token: cookie.Value}
+	err = s.sessionService.GetSession(&session)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			s.PostUnauth(w, r)
+			return
+		}
+
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	if err != nil {
+		log.Println(err)
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	post := model.Post{ID: int64(id)}
+	err = s.postService.GetPost(&post)
+	if err != nil {
+		if err.Error() != "getPost: sql: no rows in result set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			return
+		}
+		log.Println("error", err)
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	t, err := template.ParseFiles("./templates/html/post.html")
+	if err != nil {
+		log.Println("template parse error", err)
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	t.ExecuteTemplate(w, "post", post)
 }
 
 func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
@@ -116,11 +161,12 @@ func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
 	}
+
 	if r.URL.Query().Get("ID") == "" {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
 		return
 	}
-	fmt.Println(r.URL.Query().Get("ID"))
+
 	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
 	if err != nil {
 		log.Println(err)

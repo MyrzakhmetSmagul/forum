@@ -30,7 +30,6 @@ func NewAuthService(dao repository.DAO) AuthService {
 }
 
 func (a *authService) SignIn(user *model.User, session *model.Session) error {
-	log.Println(user.Email)
 	err := a.UserQuery.UserVerification(user)
 	if err != nil {
 		log.Println(err)
@@ -40,7 +39,7 @@ func (a *authService) SignIn(user *model.User, session *model.Session) error {
 	tempSession := model.Session{User: *user}
 	err = a.SessionQuery.GetSessionByUserID(&tempSession)
 	if err != nil && err.Error() != "sql: no rows in result set" {
-		log.Println(err)
+		log.Println("Sign In service error:", err)
 		return err
 	} else if err == nil {
 		a.SessionQuery.DeleteSession(&tempSession)
@@ -48,7 +47,7 @@ func (a *authService) SignIn(user *model.User, session *model.Session) error {
 
 	token, err := uuid.NewV4()
 	if err != nil {
-		log.Println(err)
+		log.Println("Sign In service newV4 error:", err)
 		return err
 	}
 

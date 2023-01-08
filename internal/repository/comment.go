@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -71,7 +70,6 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 			return err
 		}
 
-		fmt.Println("$$$$$$$$$\n", comment.ID, comment.UserID, comment.Username, comment.Message, "\n$$$$$$$$$$$$$$")
 		err = c.getCommentLikesDislikes(&comment)
 		if err != nil {
 			log.Println("getCOmmentLikesDislikes", err)

@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -60,7 +59,6 @@ func (u *userQuery) UserVerification(user *model.User) error {
 
 	defer query.Close()
 
-	fmt.Println(user.Email)
 	tempPasswd := user.Password
 	err = query.QueryRow(user.Email).Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
@@ -128,6 +126,10 @@ func (u *userQuery) GetUserInfo(user *model.User) error {
 	err = query.QueryRow(user.ID).Scan(&user.Username, &user.Email, &user.Password)
 	if err != nil {
 		log.Println("GetUserInfo ERROR", err)
+		if err.Error() == "sql: no rows in result set" {
+			log.Println("user doesn't exist")
+			return errors.New("user doesn't exist")
+		}
 		return err
 	}
 

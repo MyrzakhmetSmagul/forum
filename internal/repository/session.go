@@ -42,12 +42,10 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 	}
 
 	session.ID = id
-	log.Println("CREATE SESSION WAS SUCCESFULE")
 	return nil
 }
 
 func (s *sessionQuery) DeleteSession(session *model.Session) error {
-	log.Println(session.Token)
 	sqlStmt := `DELETE FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
@@ -92,7 +90,7 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 		log.Println("sessionQuery.GetSession", err)
 		return err
 	}
-	log.Println("GET SESSION WAS SUCCESFULE")
+
 	return nil
 }
 

@@ -13,6 +13,8 @@ func (s *ServiceServer) Run() error {
 	mux.HandleFunc("/signUp", s.authMiddleware(s.SignUp))
 	mux.HandleFunc("/signOut", s.authMiddleware(s.SignOut))
 	mux.HandleFunc("/post", s.authMiddleware(s.Post))
+	mux.HandleFunc("/postLike", s.authMiddleware(s.PostLike))
+	mux.HandleFunc("/postDislike", s.authMiddleware(s.PostDislike))
 	mux.HandleFunc("/newPost", s.authMiddleware(s.NewPost))
 
 	server := http.Server{

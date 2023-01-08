@@ -62,7 +62,7 @@ func (p *postQuery) GetPost(post *model.Post) error {
 
 	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, &post.User.ID, &post.User.Username)
 	if err != nil {
-		log.Println(err)
+		log.Println("getPost", err)
 		return errors.New("getPost: " + err.Error())
 	}
 

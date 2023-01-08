@@ -22,7 +22,7 @@
     <div class="posts">
       {{range .Posts}}
       <div class="post" id="{{.ID}}">
-        <h3>{{.Title}}</h3>
+        <a href="/post?ID={{.ID}}">{{.Title}}</a>
         <p>{{.Content}}</p>
         <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
         <div class="post-categories"></div>

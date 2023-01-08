@@ -10,7 +10,6 @@ import (
 )
 
 func (s *ServiceServer) SignIn(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method)
 	if r.Method == http.MethodGet {
 		s.GetSignIn(w, r)
 		return
