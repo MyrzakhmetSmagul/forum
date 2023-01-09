@@ -16,7 +16,7 @@ func (s *ServiceServer) Run() error {
 	mux.HandleFunc("/postLike", s.authMiddleware(s.PostLike))
 	mux.HandleFunc("/postDislike", s.authMiddleware(s.PostDislike))
 	mux.HandleFunc("/newPost", s.authMiddleware(s.NewPost))
-
+	mux.HandleFunc("/createComment", s.authMiddleware(s.CreateComment))
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: mux,

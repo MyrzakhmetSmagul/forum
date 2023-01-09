@@ -59,6 +59,28 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 			return
 		}
 
+		err = s.userService.GetUserInfo(&session.User)
+		if err != nil {
+			if err.Error() == "user doesn't exist" {
+				err = s.sessionService.DeleteSession(&session)
+				if err != nil {
+					s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+					return
+				}
+			} else {
+				s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+				return
+			}
+
+			if r.URL.Path == "/post" {
+				s.PostUnauth(w, r)
+				return
+			}
+
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
+			return
+		}
+
 		next(w, r, &session)
 	}
 }

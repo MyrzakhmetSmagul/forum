@@ -19,7 +19,10 @@ type commentQuery struct {
 }
 
 func (c *commentQuery) CreateComment(comment *model.Comment) error {
-	sqlStmt := `INSERT INTO comments(post_id, user_id, username, message) VALUES(?,?,?,?)`
+	sqlStmt := `INSERT INTO comments (post_id, user_id, username, message) 
+	SELECT post_id, ?, ?, ?
+	FROM posts
+	WHERE EXISTS (SELECT * FROM posts WHERE post_id=?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -28,7 +31,7 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 
 	defer query.Close()
 
-	result, err := query.Exec(comment.PostID, comment.UserID, comment.Username, comment.Message)
+	result, err := query.Exec(comment.UserID, comment.Username, comment.Message, comment.PostID)
 	if err != nil {
 		log.Println(err)
 		return err

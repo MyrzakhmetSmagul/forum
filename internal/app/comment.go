@@ -23,5 +23,8 @@ func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, se
 	}
 
 	comment := model.Comment{PostID: int64(postID), UserID: session.User.ID, Username: session.User.Username, Message: r.PostFormValue("comment")}
-	s.postService.CreateComment(&comment)
+	err = s.postService.CreateComment(&comment)
+	if err != nil {
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
 }
