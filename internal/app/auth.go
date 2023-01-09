@@ -117,25 +117,13 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/signIn", http.StatusFound)
 }
 
-func (s *ServiceServer) SignOut(w http.ResponseWriter, r *http.Request) {
+func (s *ServiceServer) SignOut(w http.ResponseWriter, r *http.Request, session *model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
 	}
-	cookie, err := r.Cookie("authToken")
-	session := model.Session{Token: cookie.Value}
-	err = s.sessionService.GetSession(&session)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
 
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
-	err = s.authService.SignOut(&session)
+	err := s.authService.SignOut(session)
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return

@@ -8,9 +8,9 @@ import (
 func (s *ServiceServer) Run() error {
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./templates/static"))))
-	mux.HandleFunc("/", s.authMiddleware(s.IndexWithSession))
-	mux.HandleFunc("/signIn", s.authMiddleware(s.SignIn))
-	mux.HandleFunc("/signUp", s.authMiddleware(s.SignUp))
+	mux.HandleFunc("/", s.IndexWithSession)
+	mux.HandleFunc("/signIn", s.SignIn)
+	mux.HandleFunc("/signUp", s.SignUp)
 	mux.HandleFunc("/signOut", s.authMiddleware(s.SignOut))
 	mux.HandleFunc("/post", s.authMiddleware(s.Post))
 	mux.HandleFunc("/postLike", s.authMiddleware(s.PostLike))

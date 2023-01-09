@@ -12,7 +12,7 @@
         <a class="node" href="/">Home</a>
         <div class="categories">
           {{ range .Categories}}
-          <a href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
+          <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
           {{end}}
         </div>
         <a class="node" href="/signIn">Sign in</a>

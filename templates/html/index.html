@@ -12,9 +12,8 @@
         <a class="node" href="/">Home</a>
         <div class="categories">
           {{ range .Categories}}
-          <a href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
+          <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
           {{end}}
-          <a href="/createCategory">Create category</a>
         </div>
         <a class="node" href="/newPost">New post</a>
         <a class="node" href="/signOut">Sign out</a>

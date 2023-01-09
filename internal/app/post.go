@@ -9,17 +9,12 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("authToken"); err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusForbidden, StatusText: http.StatusText(http.StatusForbidden)})
-		return
-	}
-
+func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session *model.Session) {
 	if r.Method == http.MethodGet {
 		s.GetNewPost(w, r)
 		return
 	}
-	s.PostNewPost(w, r)
+	s.PostNewPost(w, r, &session.User)
 }
 
 func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +31,7 @@ func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request) {
+func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user *model.User) {
 	if r.Method != http.MethodPost {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
@@ -48,47 +43,7 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("authToken")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
-	session := model.Session{Token: cookie.Value}
-	err = s.sessionService.GetSession(&session)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
-	user := model.User{ID: session.User.ID}
-	err = s.userService.GetUserInfo(&user)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			err = s.sessionService.DeleteSession(&session)
-			if err != nil {
-				s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-				return
-			}
-
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
-	post := model.Post{User: user, Title: r.PostFormValue("title"), Content: r.PostFormValue("content")}
+	post := model.Post{User: *user, Title: r.PostFormValue("title"), Content: r.PostFormValue("content")}
 	err = s.postService.CreatePost(&post)
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
@@ -98,13 +53,7 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("authToken")
-	if err != nil {
-		s.PostUnauth(w, r)
-		return
-	}
-
+func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session *model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
@@ -115,21 +64,9 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session := model.Session{Token: cookie.Value}
-	err = s.sessionService.GetSession(&session)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			s.PostUnauth(w, r)
-			return
-		}
-
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
 	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
 	if err != nil {
-		log.Println(err)
+		log.Println("post", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -137,10 +74,11 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 	post := model.Post{ID: int64(id)}
 	err = s.postService.GetPost(&post)
 	if err != nil {
-		if err.Error() != "getPost: sql: no rows in result set" {
+		if err.Error() != "getPost sql: no rows in result set" {
 			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
 			return
 		}
+
 		log.Println("error", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
@@ -169,7 +107,7 @@ func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
 	if err != nil {
-		log.Println(err)
+		log.Println("post unauth", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -177,10 +115,11 @@ func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
 	post := model.Post{ID: int64(id)}
 	err = s.postService.GetPost(&post)
 	if err != nil {
-		if err.Error() != "getPost: sql: no rows in result set" {
+		if err.Error() != "getPost sql: no rows in result set" {
 			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
 			return
 		}
+
 		log.Println("error", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return

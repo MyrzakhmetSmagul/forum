@@ -9,7 +9,10 @@ import (
 )
 
 func (pr *postQuery) createReactionToPost(reaction *model.PostReaction) error {
-	sqlStmt := `INSERT INTO posts_likes_dislikes(post_id,user_id, like, dislike)VALUES(?,?,?,?)`
+	sqlStmt := `INSERT INTO posts_likes_dislikes (post_id, user_id, like, dislike) 
+	SELECT post_id, ?, 0, 0
+	FROM posts
+	WHERE EXISTS (SELECT * FROM posts WHERE post_id=?)`
 	query, err := pr.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -18,15 +21,26 @@ func (pr *postQuery) createReactionToPost(reaction *model.PostReaction) error {
 
 	defer query.Close()
 
-	res, err := query.Exec(reaction.Post.ID, reaction.User.ID, 0, 0)
+	res, err := query.Exec(reaction.User.ID, reaction.Post.ID)
 	if err != nil {
-		log.Println(err)
+		log.Println("createReactionToPost EXEC Error", err)
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Println("createReactionToPost result.RowsAffected error", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		log.Println("post doesn't exist")
+		return errors.New("post doesn't exist")
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println(err)
+		log.Println("createReactionToPost result.LastInsertId error", err)
 		return err
 	}
 
@@ -38,7 +52,7 @@ func (pr *postQuery) PostSetLike(reaction *model.PostReaction) error {
 	var sqlStmt string
 	err := pr.getUserReactionToPost(reaction)
 	if err != nil {
-		log.Println(err)
+		log.Println("Post Set Like", err)
 		return err
 	}
 
@@ -72,7 +86,7 @@ func (pr *postQuery) PostSetDislike(reaction *model.PostReaction) error {
 	var sqlStmt string
 	err := pr.getUserReactionToPost(reaction)
 	if err != nil {
-		log.Println(err)
+		log.Println("post Set Dislike", err)
 		return err
 	}
 
@@ -134,6 +148,7 @@ func (pr *postQuery) getUserReactionToPost(reaction *model.PostReaction) error {
 	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
+			log.Println("create reaction was called")
 			return pr.createReactionToPost(reaction)
 		}
 

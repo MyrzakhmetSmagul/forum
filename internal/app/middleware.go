@@ -1,23 +1,21 @@
 package app
 
 import (
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Request, *model.Session)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("authToken")
 		if err == http.ErrNoCookie {
-			log.Println("middleware no cookie", r.URL.Path)
-			if r.URL.Path == "/" || r.URL.Path == "/signOut" {
-				s.IndexWithoutSession(w, r)
+			if r.URL.Path == "/post" {
+				s.PostUnauth(w, r)
 				return
 			}
-			next.ServeHTTP(w, r)
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
 			return
 		}
 
@@ -25,17 +23,12 @@ func (s *ServiceServer) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		err = s.sessionService.GetSession(&session)
 		if err != nil {
 			if err.Error() == "sql: no rows in result set" {
-				if r.URL.Path == "/signIn" || r.URL.Path == "/signUp" || r.URL.Path == "/post" {
-					next.ServeHTTP(w, r)
+				if r.URL.Path == "/post" {
+					s.PostUnauth(w, r)
 					return
 				}
 
-				if r.URL.Path == "/" {
-					s.IndexWithoutSession(w, r)
-					return
-				}
-
-				http.Redirect(w, r, "/", http.StatusFound)
+				s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
 				return
 			}
 
@@ -50,14 +43,15 @@ func (s *ServiceServer) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 
-			http.Redirect(w, r, "/", http.StatusFound)
+			if r.URL.Path == "/post" {
+				s.PostUnauth(w, r)
+				return
+			}
+
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
 			return
 		}
 
-		if r.URL.Path == "/signIn" || r.URL.Path == "/signUp" {
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-		next.ServeHTTP(w, r)
+		next(w, r, &session)
 	}
 }

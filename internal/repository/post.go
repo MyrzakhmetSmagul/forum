@@ -40,6 +40,17 @@ func (p *postQuery) CreatePost(post *model.Post) error {
 		return err
 	}
 
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("CREATE POST rows affected error:", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		log.Println("create post was failed")
+		return errors.New("create post was failed")
+	}
+
 	id, err := result.LastInsertId()
 	if err != nil {
 		log.Println(err)
@@ -47,7 +58,7 @@ func (p *postQuery) CreatePost(post *model.Post) error {
 	}
 
 	post.ID = id
-	return nil
+	return p.SetPostCategory(post)
 }
 
 func (p *postQuery) GetPost(post *model.Post) error {
