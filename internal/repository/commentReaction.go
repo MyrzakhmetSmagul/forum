@@ -9,7 +9,10 @@ import (
 )
 
 func (c *commentQuery) createReactionToComment(reaction *model.CommentReaction) error {
-	sqlStmt := `INSERT INTO comments_likes_dislikes(comment_id,user_id, like, dislike)VALUES(?,?,?,?)`
+	sqlStmt := `INSERT INTO comments_likes_dislikes (comment_id, user_id, like, dislike) 
+	SELECT comment_id, ?, 0, 0
+	FROM comments
+	WHERE EXISTS (SELECT * FROM posts WHERE comment_id=?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -18,10 +21,21 @@ func (c *commentQuery) createReactionToComment(reaction *model.CommentReaction) 
 
 	defer query.Close()
 
-	res, err := query.Exec(reaction.Comment.ID, reaction.User.ID, 0, 0)
+	res, err := query.Exec(reaction.User.ID, reaction.Comment.ID)
 	if err != nil {
 		log.Println(err)
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Println("CreateReactionToComment result.RowsAffected error", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		log.Println("comment doesn't exist")
+		return errors.New("comment doesn't exist")
 	}
 
 	id, err := res.LastInsertId()
@@ -56,6 +70,7 @@ func (c *commentQuery) CommentSetLike(reaction *model.CommentReaction) error {
 		log.Println(err)
 		return err
 	}
+
 	sqlStmt = `SELECT like, dislike FROM comments_likes_dislikes WHERE Id=?`
 	err = c.db.QueryRow(sqlStmt, reaction.ID).Scan(&reaction.Like, &reaction.Dislike)
 	if err != nil {
@@ -119,7 +134,7 @@ func (c *commentQuery) updateCommentReaction(sqlStmt string, db *sql.DB, reactio
 }
 
 func (c *commentQuery) getUserReactionToComment(reaction *model.CommentReaction) error {
-	sqlStmt := `SELECT id, like, dislike FROM comments_likes_dislikes WHERE post_id=? and user_id=?`
+	sqlStmt := `SELECT id, like, dislike FROM comments_likes_dislikes WHERE comment_id=? and user_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)

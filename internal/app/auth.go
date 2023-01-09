@@ -95,15 +95,14 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+	if r.ParseForm() != nil {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
 		return
 	}
 
 	user := model.User{Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
-	session := model.Session{Expiry: time.Now().Add(time.Minute)}
-	err = s.authService.SignIn(&user, &session)
+	session := model.Session{Expiry: time.Now().Add(time.Minute * 10)}
+	err := s.authService.SignIn(&user, &session)
 	if err != nil {
 		if err.Error() == "the user's email or password is incorrect" || err.Error() == "sql: no rows in result set" {
 			http.Redirect(w, r, "/signIn", http.StatusFound)
@@ -118,7 +117,7 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 		Name:     "authToken",
 		Value:    session.Token,
 		SameSite: http.SameSiteDefaultMode,
-		MaxAge:   60,
+		MaxAge:   600,
 		Expires:  session.Expiry,
 		HttpOnly: true,
 	}
@@ -133,14 +132,13 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+	if r.ParseForm() != nil {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
 		return
 	}
 
 	user := model.User{Username: r.PostFormValue("username"), Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
-	err = s.authService.SignUp(&user)
+	err := s.authService.SignUp(&user)
 	if err != nil {
 		if err.Error() == "user exist" {
 			http.Redirect(w, r, "/signUp", http.StatusFound)

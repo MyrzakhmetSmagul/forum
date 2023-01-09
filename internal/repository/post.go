@@ -77,11 +77,15 @@ func (p *postQuery) GetPost(post *model.Post) error {
 		return errors.New("getPost: " + err.Error())
 	}
 
+	log.Println("get post category started")
 	err = p.GetPostCategories(post)
 	if err != nil {
 		log.Println("getPost", err)
 		return err
 	}
+
+	log.Println("get post category finished")
+	log.Println("category", post.Categories[0].Category)
 
 	err = p.GetPostLikesDislikes(post)
 	if err != nil {
@@ -113,7 +117,7 @@ func (p *postQuery) GetAllPosts() ([]model.Post, error) {
 
 		err = p.GetPostCategories(&post)
 		if err != nil {
-			log.Println(err)
+			log.Println("Get post Categories", err)
 			return []model.Post{}, err
 		}
 

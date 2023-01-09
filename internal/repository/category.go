@@ -31,7 +31,11 @@ func (c *postQuery) GetPostCategories(post *model.Post) error {
 
 	for rows.Next() {
 		var category model.Category
-		rows.Scan(&category.ID, &category.Category)
+		err = rows.Scan(&category.ID, &category.Category)
+		if err != nil {
+			log.Println("Get Post Category err", err)
+			return err
+		}
 		post.Categories = append(post.Categories, category)
 	}
 
@@ -49,7 +53,7 @@ func (c *postQuery) SetPostCategory(post *model.Post) error {
 	defer query.Close()
 
 	for i := 0; i < len(post.Categories); i++ {
-		_, err = query.Exec(post.Categories[i].ID, post.Categories[i].Category)
+		_, err = query.Exec(post.ID, post.Categories[i].ID)
 		if err != nil {
 			log.Printf("can't set post categories,\nPost_id = %d, category = %s, number = %d\n ERROR: %s", post.ID, post.Categories[i].Category, i, err.Error())
 			return err

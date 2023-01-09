@@ -23,8 +23,16 @@ func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.ExecuteTemplate(w, "create-post", nil)
+	allCategories, err := s.postService.GetAllCategory()
 	if err != nil {
+		log.Println("get all categories error", err)
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	err = t.ExecuteTemplate(w, "create-post", allCategories)
+	if err != nil {
+		log.Println("template error")
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -36,13 +44,38 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+	if r.ParseForm() != nil {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
 		return
 	}
 
 	post := model.Post{User: *user, Title: r.PostFormValue("title"), Content: r.PostFormValue("content")}
+
+	categories := r.Form["categories"]
+	allCategories, err := s.postService.GetAllCategory()
+	if err != nil {
+		log.Println("get all categories error", err)
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	status := false
+	for i := 0; i < len(categories); i++ {
+		for j := 0; j < len(allCategories); j++ {
+			if categories[i] == allCategories[j].Category {
+				post.Categories = append(post.Categories, allCategories[j])
+				status = true
+				break
+			}
+		}
+	}
+
+	if !status {
+		log.Println("error create post without categories")
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
 	err = s.postService.CreatePost(&post)
 	if err != nil {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})

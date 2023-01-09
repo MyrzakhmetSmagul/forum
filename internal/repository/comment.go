@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -12,6 +13,7 @@ type CommentQuery interface {
 	GetPostComments(post *model.Post) error
 	CommentSetLike(reaction *model.CommentReaction) error
 	CommentSetDislike(reaction *model.CommentReaction) error
+	GetCommentInfo(comment *model.Comment) error
 }
 
 type commentQuery struct {
@@ -35,6 +37,17 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 	if err != nil {
 		log.Println(err)
 		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("CreateComment result.RowsAffected error", err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		log.Println("post doesn't exist")
+		return errors.New("post doesn't exist")
 	}
 
 	id, err := result.LastInsertId()
@@ -80,6 +93,18 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 		}
 
 		post.Comments = append(post.Comments, comment)
+	}
+
+	return nil
+}
+
+func (c *commentQuery) GetCommentInfo(comment *model.Comment) error {
+	sqlStmt := `SELECT * FROM comments WHERE comment_id=?`
+	log.Println("Get Commnent")
+	err := c.db.QueryRow(sqlStmt, comment.ID).Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Username, &comment.Message)
+	if err != nil {
+		log.Println("Get Comment Info Error", err)
+		return err
 	}
 
 	return nil

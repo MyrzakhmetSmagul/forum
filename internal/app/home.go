@@ -101,12 +101,14 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 
 	categories, err := s.postService.GetAllCategory()
 	if err != nil {
+		log.Println("get all categories error", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
 	posts, err := s.postService.GetAllPosts()
 	if err != nil {
+		log.Println("get all posts error", err)
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
