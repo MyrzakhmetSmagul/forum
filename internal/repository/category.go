@@ -93,7 +93,7 @@ func (c *postQuery) GetAllCategory() ([]model.Category, error) {
 	sqlStmt := `SELECT * FROM categories`
 	rows, err := c.db.Query(sqlStmt)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetAllCategory", err)
 		return []model.Category{}, err
 	}
 
@@ -104,7 +104,7 @@ func (c *postQuery) GetAllCategory() ([]model.Category, error) {
 		category := model.Category{}
 		err = rows.Scan(&category.ID, &category.Category)
 		if err != nil {
-			log.Println(err)
+			log.Println("GetAllCategory", err)
 			return []model.Category{}, err
 		}
 

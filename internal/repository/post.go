@@ -18,6 +18,8 @@ type PostQuery interface {
 	CreateCategory(category *model.Category) error
 	GetAllCategory() ([]model.Category, error)
 	GetPostsOfCategory(category model.Category) ([]model.Post, error)
+	GetUserPosts(user model.User) ([]model.Post, error)
+	GetRatedPosts(user model.User) ([]model.Post, error)
 }
 
 type postQuery struct {
@@ -149,6 +151,8 @@ func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, e
 		return []model.Post{}, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
@@ -166,6 +170,90 @@ func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, e
 		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
 			log.Println("GetPostsOfCategory ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func (p *postQuery) GetUserPosts(user model.User) ([]model.Post, error) {
+	sqlStmt := `SELECT * FROM posts WHERE user_id=?`
+	rows, err := p.db.Query(sqlStmt, user.ID)
+	if err != nil {
+		log.Println("GetUserPosts ERROR:", err)
+		return []model.Post{}, err
+	}
+
+	defer rows.Close()
+
+	posts := []model.Post{}
+	for rows.Next() {
+		post := model.Post{}
+		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
+		if err != nil {
+			log.Println("GetUserPosts ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostCategories(&post)
+		if err != nil {
+			log.Println("GetUserPosts ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostLikesDislikes(&post)
+		if err != nil {
+			log.Println("GetUserPosts ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func (p *postQuery) GetRatedPosts(user model.User) ([]model.Post, error) {
+	sqlStmt := `SELECT posts.post_id, posts.title, posts.content, posts.user_id, posts.username FROM posts
+	INNER JOIN posts_likes_dislikes ON posts.post_id = posts_likes_dislikes.post_id
+	WHERE posts_likes_dislikes.user_id=? AND (posts_likes_dislikes.like=1 OR posts_likes_dislikes.dislike=1)`
+	query, err := p.db.Prepare(sqlStmt)
+	if err != nil {
+		log.Println("GetRatedPosts ERROR:", err)
+		return []model.Post{}, err
+	}
+
+	defer query.Close()
+
+	posts := []model.Post{}
+	rows, err := query.Query(user.ID)
+	if err != nil {
+		log.Println("GetRatedPosts ERROR:", err)
+		return []model.Post{}, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		post := model.Post{}
+		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
+		if err != nil {
+			log.Println("GetRatedPosts ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostCategories(&post)
+		if err != nil {
+			log.Println("GetRatedPosts ERROR:", err)
+			return []model.Post{}, err
+		}
+
+		err = p.GetPostLikesDislikes(&post)
+		if err != nil {
+			log.Println("GetRatedPosts ERROR:", err)
 			return []model.Post{}, err
 		}
 

@@ -10,7 +10,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Request, *model.Session)) http.HandlerFunc {
+func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Request, model.Session)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("authToken")
 		if err != nil {
@@ -81,7 +81,7 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 			return
 		}
 
-		next(w, r, &session)
+		next(w, r, session)
 	}
 }
 

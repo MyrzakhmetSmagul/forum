@@ -8,7 +8,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
@@ -46,7 +46,7 @@ func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, sess
 	http.Redirect(w, r, "/post?ID="+strconv.Itoa(int(reaction.Comment.PostID)), http.StatusFound)
 }
 
-func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return

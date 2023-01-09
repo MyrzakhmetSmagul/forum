@@ -20,6 +20,8 @@ type PostService interface {
 	GetAllCategory() ([]model.Category, error)
 	GetPostsOfCategory(category model.Category) ([]model.Post, error)
 	GetCommentInfo(comment *model.Comment) error
+	GetUserPosts(user model.User) ([]model.Post, error)
+	GetRatedPosts(user model.User) ([]model.Post, error)
 }
 
 type postService struct {
@@ -86,4 +88,12 @@ func (p *postService) GetPostsOfCategory(category model.Category) ([]model.Post,
 
 func (p *postService) GetCommentInfo(comment *model.Comment) error {
 	return p.CommentQuery.GetCommentInfo(comment)
+}
+
+func (p *postService) GetUserPosts(user model.User) ([]model.Post, error) {
+	return p.PostQuery.GetUserPosts(user)
+}
+
+func (p *postService) GetRatedPosts(user model.User) ([]model.Post, error) {
+	return p.PostQuery.GetRatedPosts(user)
 }

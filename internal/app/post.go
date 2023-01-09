@@ -8,7 +8,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method == http.MethodGet {
 		s.GetNewPost(w, r)
 		return
@@ -85,7 +85,7 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return

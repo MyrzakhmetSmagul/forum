@@ -8,7 +8,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
@@ -39,7 +39,7 @@ func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session
 	http.Redirect(w, r, "/post?ID="+strconv.Itoa(postID), http.StatusFound)
 }
 
-func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, session *model.Session) {
+func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
 		return
