@@ -3,7 +3,6 @@ package app
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"text/template"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -59,19 +58,17 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session *mo
 		return
 	}
 
-	if r.URL.Query().Get("ID") == "" {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
-		return
-	}
-
-	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	postID, err := s.getID(r)
 	if err != nil {
-		log.Println("post", err)
+		if err.Error() == "ID not set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			return
+		}
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
-	post := model.Post{ID: int64(id)}
+	post := model.Post{ID: int64(postID)}
 	err = s.postService.GetPost(&post)
 	if err != nil {
 		if err.Error() != "getPost sql: no rows in result set" {
@@ -100,19 +97,17 @@ func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("ID") == "" {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
-		return
-	}
-
-	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	postID, err := s.getID(r)
 	if err != nil {
-		log.Println("post unauth", err)
+		if err.Error() == "ID not set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			return
+		}
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
-	post := model.Post{ID: int64(id)}
+	post := model.Post{ID: int64(postID)}
 	err = s.postService.GetPost(&post)
 	if err != nil {
 		if err.Error() != "getPost sql: no rows in result set" {

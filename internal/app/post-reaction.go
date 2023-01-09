@@ -14,15 +14,12 @@ func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session
 		return
 	}
 
-	if r.URL.Query().Get("ID") == "" {
-		log.Println("PostID not set")
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
-		return
-	}
-
-	postID, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	postID, err := s.getID(r)
 	if err != nil {
-		log.Println("postID atoi error:", err)
+		if err.Error() == "ID not set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			return
+		}
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -48,15 +45,12 @@ func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, sess
 		return
 	}
 
-	if r.URL.Query().Get("ID") == "" {
-		log.Println("PostID not set")
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
-		return
-	}
-
-	postID, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	postID, err := s.getID(r)
 	if err != nil {
-		log.Println("postID atoi error:", err)
+		if err.Error() == "ID not set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			return
+		}
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}

@@ -1,7 +1,10 @@
 package app
 
 import (
+	"errors"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -58,4 +61,18 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 
 		next(w, r, &session)
 	}
+}
+
+func (s *ServiceServer) getID(r *http.Request) (int, error) {
+	if r.URL.Query().Get("ID") == "" {
+		log.Println("ID not set")
+		return 0, errors.New("ID not set")
+	}
+
+	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
+	if err != nil {
+		log.Println("ID atoi error:", err)
+		return 0, err
+	}
+	return id, nil
 }
