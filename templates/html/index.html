@@ -12,7 +12,7 @@
           <a class="node" href="/">Home</a>
           <div class="categories">
             {{ range .Categories}}
-            <a href="/categories?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
+            <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
           </div>
           <a class="node" href="/newPost">New post</a>
@@ -27,7 +27,7 @@
           <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
           <div class="post-categories"></div>
             {{ range .Categories}}
-            <a class="post-category" href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
+            <a class="post-category" href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
           </div>
           <p>Like {{.Like}} Disike {{.Dislike}}</p>

@@ -27,7 +27,7 @@
         <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
         <div class="post-categories"></div>
           {{ range .Categories}}
-          <a class="post-category" href="{{.Category}}" id="{{.ID}}">{{.Category}}</a>
+          <a class="post-category" href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
           {{end}}
         </div>
         <p>Like {{.Like}} Disike {{.Dislike}}</p>

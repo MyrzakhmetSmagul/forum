@@ -11,6 +11,11 @@
     <div class="post-container">
         <div class="post-title">{{.Title}}</div>
         <div class="post-author">{{.User.Username}}</div>
+        <div class="categories-container">
+            {{range .Categories}}
+                <div class="category"><a href="/category?ID={{.ID}}">{{.Category}}</a></div>
+            {{end}}
+        </div>
         <div class="post-content">{{.Content}}</div>
         <div class="post-likes">Likes: {{.Like}}</div>
         <div class="post-dislikes">Dislikes: {{.Dislike}}</div>
