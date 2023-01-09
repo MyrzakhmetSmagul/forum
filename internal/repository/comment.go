@@ -24,7 +24,7 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 	sqlStmt := `INSERT INTO comments (post_id, user_id, username, message) 
 	SELECT post_id, ?, ?, ?
 	FROM posts
-	WHERE EXISTS (SELECT * FROM posts WHERE post_id=?)`
+	WHERE EXISTS (SELECT * FROM posts WHERE post_id=?) AND post_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
 		log.Println(err)
@@ -33,7 +33,7 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 
 	defer query.Close()
 
-	result, err := query.Exec(comment.UserID, comment.Username, comment.Message, comment.PostID)
+	result, err := query.Exec(comment.UserID, comment.Username, comment.Message, comment.PostID, comment.PostID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -100,7 +100,6 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 
 func (c *commentQuery) GetCommentInfo(comment *model.Comment) error {
 	sqlStmt := `SELECT * FROM comments WHERE comment_id=?`
-	log.Println("Get Commnent")
 	err := c.db.QueryRow(sqlStmt, comment.ID).Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Username, &comment.Message)
 	if err != nil {
 		log.Println("Get Comment Info Error", err)
