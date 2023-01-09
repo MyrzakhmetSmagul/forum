@@ -10,12 +10,16 @@ import (
 func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Request, *model.Session)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("authToken")
-		if err == http.ErrNoCookie {
-			if r.URL.Path == "/post" {
-				s.PostUnauth(w, r)
+		if err != nil {
+			if err == http.ErrNoCookie {
+				if r.URL.Path == "/post" {
+					s.PostUnauth(w, r)
+					return
+				}
+				s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
 				return
 			}
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusUnauthorized, StatusText: http.StatusText(http.StatusUnauthorized)})
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
 			return
 		}
 
@@ -32,7 +36,7 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 				return
 			}
 
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
 			return
 		}
 

@@ -10,6 +10,22 @@ import (
 )
 
 func (s *ServiceServer) SignIn(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("authToken")
+	if err != nil && err != http.ErrNoCookie {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
+		return
+	} else if err == nil {
+		session := model.Session{Token: cookie.Value}
+		err = s.sessionService.GetSession(&session)
+		if err != nil && err.Error() != "sql: no rows in result set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+			return
+		} else if err == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+	}
+
 	if r.Method == http.MethodGet {
 		s.GetSignIn(w, r)
 		return
@@ -19,6 +35,22 @@ func (s *ServiceServer) SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServiceServer) SignUp(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("authToken")
+	if err != nil && err != http.ErrNoCookie {
+		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
+		return
+	} else if err == nil {
+		session := model.Session{Token: cookie.Value}
+		err = s.sessionService.GetSession(&session)
+		if err != nil && err.Error() != "sql: no rows in result set" {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+			return
+		} else if err == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+	}
+
 	if r.Method == http.MethodGet {
 		s.GetSignUp(w, r)
 		return
@@ -110,6 +142,10 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 	user := model.User{Username: r.PostFormValue("username"), Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
 	err = s.authService.SignUp(&user)
 	if err != nil {
+		if err.Error() == "user exist" {
+			http.Redirect(w, r, "/signUp", http.StatusFound)
+			return
+		}
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
