@@ -122,7 +122,7 @@ func createCategories(db *sql.DB) error {
 	SELECT * 
 	FROM (SELECT ? as category) AS tmp 
 	WHERE NOT EXISTS (SELECT category FROM categories WHERE category=?) LIMIT 1`
-	categories := []string{"Adventure stories", "Crime", "Fantasy", "Humore and satire", "Mystery", "Plays", "Romance"}
+	categories := []string{"Adventure stories", "Crime", "Fantasy", "Humour", "Mystery", "Plays", "Other"}
 	for i := 0; i < len(categories); i++ {
 		_, err := db.Exec(sqlStmt, categories[i], categories[i])
 		if err != nil {

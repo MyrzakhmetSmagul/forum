@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	dao := repository.NewDao(db)
 	authService := services.NewAuthService(dao)
 	postService := services.NewPostService(dao)
