@@ -10,11 +10,16 @@
     <div class="header">
       <div class="menu">
         <a class="node" href="/">Home</a>
-        <div class="categories">
-          {{ range .Categories}}
-          <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
+        <div class="dropdown">
+          <button class="dropbtn"> Categories 
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            {{ range .Categories}}
+            <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
           {{end}}
-        </div>
+          </div>
+    </div>
         <a class="node" href="/signIn">Sign in</a>
         <a class="node" href="/signUp">Sign up</a>
       </div>
@@ -33,6 +38,10 @@
         <p>Like {{.Like}} Disike {{.Dislike}}</p>
       </div>
       {{end}}
+    </div>
+    <div style="margin-top: 10%; text-align: center;">
+      <p style="font-size: 70px; color: black; margin-bottom: 0;">No Posts</p> 
+      <a href="/signIn" style="font-size: 25px; color: rgb(75, 219, 39);">Create Post</a>
     </div>
   </body>
 </html>
