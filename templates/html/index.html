@@ -32,10 +32,10 @@
           <p>{{.Content}}</p>
           <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
           <div class="dropdown">
-            <button class="dropbtn"> Categories 
+            <button class="dropbtn" style="color:black;"> Categories 
               <i class="fa fa-caret-down"></i>
             </button>
-            <div style="color: black;">
+            <div class="dropdown-content">
               {{ range .Categories}}
               <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
