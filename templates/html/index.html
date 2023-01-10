@@ -35,7 +35,7 @@
             <button class="dropbtn"> Categories 
               <i class="fa fa-caret-down"></i>
             </button>
-            <div class="dropdown-content">
+            <div style="color: black;">
               {{ range .Categories}}
               <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
