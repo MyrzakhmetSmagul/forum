@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/css/signin.css">
 </head>
 <body>
+  <a href="/">Home</a>
   <div class="login-box">
     <h2>Sign in</h2>
     <form action="/signIn" method="post">
@@ -14,6 +15,7 @@
       <input type="email" name="email" id="email" required/>
       <label for="password">Password</label>
       <input type="password" name="password" id="password" required/>
+      <p>Don't you have an account? <a href="/signUp">Sign up</a></p>
       <input type="submit" value="Sign in" />
     </form>
   </div>

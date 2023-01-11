@@ -3,9 +3,9 @@ package app
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"

@@ -1,9 +1,9 @@
 package app
 
 import (
+	"html/template"
 	"log"
 	"net/http"
-	"text/template"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )

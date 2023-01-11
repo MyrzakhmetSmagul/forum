@@ -1,8 +1,8 @@
 package app
 
 import (
+	"html/template"
 	"net/http"
-	"text/template"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
