@@ -12,11 +12,13 @@
     <h2>Sign up</h2>
     <form action="/signUp" method="post">
         <label for="username">Username</label>
-        <input type="text" name="username" id="username" required/>
+        <input type="text" name="username" id="username" maxlength="18" minlength="2" pattern="^[a-zA-Z\d]+$" required />
         <label for="email">Email</label>
         <input type="email" name="email" id="email" required/>
         <label for="password">Password</label>
         <input type="password" name="password" id="password" required/>
+        <label for="password2">Repeat password</label>
+        <input type="password" name="password2" id="password2" required/>
         <p>Do you have an account? <a href="/signIn">Sign in</a></p>
         <input type="submit" value="Sign up" />
     </form>

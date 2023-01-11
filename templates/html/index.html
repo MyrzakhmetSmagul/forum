@@ -7,31 +7,40 @@
       <link rel="stylesheet" href="/static/css/index.css">
     </head>
     <body>
-      <div class="header">
-        <div class="menu">
+      <div class="navbar">
           <a class="node" href="/">Home</a>
-          <div class="categories">
-            {{ range .Categories}}
-            <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
+          <div class="dropdown">
+            <button class="dropbtn"> Categories 
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+              {{ range .Categories}}
+              <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
-          </div>
+            </div>
+      </div>
+
           <a class="node" href="/createdPosts">Created posts</a>
           <a class="node" href="/ratedPosts">Rated posts</a>
           <a class="node" href="/newPost">New post</a>
           <a class="node" href="/signOut">Sign out</a>
         </div>
-      </div>
       <div class="posts">
         {{range .Posts}}
         <div class="post" id="{{.ID}}">
           <a href="/post?ID={{.ID}}">{{.Title}}</a>
           <p>{{.Content}}</p>
           <span class="author" id="{{.User.ID}}">{{.User.Username}}</span>
-          <div class="post-categories"></div>
-            {{ range .Categories}}
-            <a class="post-category" href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
+          <div class="dropdown">
+            <button class="dropbtn" style="color:black;"> Categories 
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+              {{ range .Categories}}
+              <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
             {{end}}
-          </div>
+            </div>
+      </div>
           <p>Like {{.Like}} Disike {{.Dislike}}</p>
         </div>
         {{end}}

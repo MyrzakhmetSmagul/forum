@@ -1,12 +1,15 @@
 package app
 
 import (
+	"errors"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"github.com/MyrzakhmetSmagul/forum/validation"
 )
 
 func (s *ServiceServer) SignIn(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +104,15 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := model.User{Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
+	if err := validation.ValidationFormSignIn(user.Email, user.Password); err != nil {
+		if errors.Is(err, validation.ErrMessageValid) {
+			fmt.Println("hello")
+			http.Redirect(w, r, "/signIn", http.StatusFound)
+		} else {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		}
+		return
+	}
 	session := model.Session{Expiry: time.Now().Add(time.Minute * 10)}
 	err := s.authService.SignIn(&user, &session)
 	if err != nil {
@@ -108,7 +120,6 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/signIn", http.StatusFound)
 			return
 		}
-
 		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
@@ -137,17 +148,24 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := model.User{Username: r.PostFormValue("username"), Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
+	user := model.User{Username: r.PostFormValue("username"), Email: r.PostFormValue("email"), Password: r.PostFormValue("password"), Password2: r.PostFormValue("password2")}
+	if err := validation.ValidationFormSignUp(user.Username, user.Email, user.Password, user.Password2); err != nil {
+		if errors.Is(err, validation.ErrMessageValid) {
+			http.Redirect(w, r, "/signUp", http.StatusFound)
+		} else {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		}
+		return
+	}
 	err := s.authService.SignUp(&user)
 	if err != nil {
 		if err.Error() == "user exist" {
 			http.Redirect(w, r, "/signUp", http.StatusFound)
-			return
+		} else {
+			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
 		return
 	}
-
 	http.Redirect(w, r, "/signIn", http.StatusFound)
 }
 
