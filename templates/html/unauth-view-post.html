@@ -7,26 +7,35 @@
     <link rel="stylesheet" href="/static/css/post.css">
 </head>
 <body>
-    <a href="/">Home</a>
-    <div class="post-container">
-        <div class="post-title">{{.Title}}</div>
-        <div class="post-author">{{.User.Username}}</div>
-        <div class="categories-container">
-            {{range .Categories}}
-                <div class="category"><a href="/category?ID={{.ID}}">{{.Category}}</a></div>
+    <div class="container">
+        <a class="home" href="/">Home</a>
+        <div class="post-container">
+            <div class="post-author">{{.User.Username}}</div>
+            <h1 class="post-title">{{.Title}}</h1>
+            <div class="dropdown">
+                <button class="dropbtn">  
+                    <i>Categories</i>
+                </button>
+                <div class="dropdown-content">
+                    {{ range .Categories}}
+                    <a href="/category?ID={{.ID}}" id="{{.ID}}">{{.Category}}</a>
+                    {{end}}
+                </div>
+            </div>
+            <p class="post-content">
+                {{.Content}}
+            </p>
+            <div class="post-likes">Likes: {{.Like}}</div>
+            <div class="post-dislikes">Dislikes: {{.Dislike}}</div>
+        </div>
+        <div class="comment-container">
+            {{range .Comments}}
+                <div class="comment-author">{{.Username}}</div>
+                <div class="comment-content">{{.Message}}</div>
+                <div class="comment-likes">Likes: {{.Like}}</div>
+                <div class="comment-dislikes">Dislikes: {{.Dislike}}</div>
             {{end}}
         </div>
-        <div class="post-content">{{.Content}}</div>
-        <div class="post-likes">Likes: {{.Like}}</div>
-        <div class="post-dislikes">Dislikes: {{.Dislike}}</div>
-    </div>
-    <div class="comment-container">
-        {{range .Comments}}
-        <div class="comment-author">{{.Username}}</div>
-        <div class="comment-content">{{.Message}}</div>
-        <div class="comment-likes">Likes: {{.Like}}</div>
-        <div class="comment-dislikes">Dislikes: {{.Dislike}}</div>
-        {{end}}
     </div>
 </body>
 </html>
