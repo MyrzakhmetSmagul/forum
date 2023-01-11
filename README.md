@@ -14,6 +14,6 @@ make build
 
 ### Run the docker container:
 ```bash
-    make run
+make run
 ```
 
