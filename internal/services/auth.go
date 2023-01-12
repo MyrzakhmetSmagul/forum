@@ -1,9 +1,9 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 	"github.com/MyrzakhmetSmagul/forum/internal/repository"
@@ -32,62 +32,47 @@ func NewAuthService(dao repository.DAO) AuthService {
 func (a *authService) SignIn(user *model.User, session *model.Session) error {
 	err := a.UserQuery.UserVerification(user)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("signIn: %w", err)
 	}
 
 	tempSession := model.Session{User: *user}
 	err = a.SessionQuery.GetSessionByUserID(&tempSession)
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		log.Println("Sign In service error:", err)
-		return err
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("signIn: %w", err)
 	} else if err == nil {
-		a.SessionQuery.DeleteSession(&tempSession)
+		if err := a.SessionQuery.DeleteSession(&tempSession); err != nil {
+			return fmt.Errorf("signIn: %w", err)
+		}
 	}
 
 	token, err := uuid.NewV4()
 	if err != nil {
-		log.Println("Sign In service newV4 error:", err)
-		return err
+		return fmt.Errorf("signIn: %w", err)
 	}
 
 	session.User = *user
 	session.Token = token.String()
-	err = a.SessionQuery.CreateSession(session)
-	if err != nil {
-		log.Println("\nuser was confirmed, CREATE SESSION ERROR:", err)
-		return err
-	}
 
-	return nil
+	return a.SessionQuery.CreateSession(session)
 }
 
 func (a *authService) SignUp(user *model.User) error {
 	exist, err := a.UserQuery.IsExistUser(user)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("signUp: %w", err)
 	}
 
 	if exist {
-		log.Println("user exist")
-		return errors.New("user exist")
+		return fmt.Errorf("signUp: %w", model.ErrUserExists)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
 	if err != nil {
-		log.Println("Generate from password ERROR:", err)
-		return err
+		return fmt.Errorf("signUp: %w", err)
 	}
 
 	user.Password = string(hash)
-	err = a.UserQuery.CreateUser(user)
-	if err != nil {
-		log.Println("CREATE USER ERROR:", err)
-		return err
-	}
-	fmt.Println("user create, username:", user.Username)
-	return nil
+	return a.UserQuery.CreateUser(user)
 }
 
 func (a *authService) SignOut(session *model.Session) error {

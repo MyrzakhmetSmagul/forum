@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"log"
+	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -27,33 +26,28 @@ func (c *commentQuery) CreateComment(comment *model.Comment) error {
 	WHERE EXISTS (SELECT * FROM posts WHERE post_id=?) AND post_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createComment: %w", err)
 	}
 
 	defer query.Close()
 
 	result, err := query.Exec(comment.UserID, comment.Username, comment.Message, comment.PostID, comment.PostID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createComment: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Println("CreateComment result.RowsAffected error", err)
-		return err
+		return fmt.Errorf("createComment: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		log.Println("post doesn't exist")
-		return errors.New("post doesn't exist")
+		return fmt.Errorf("createComment: %w", model.ErrPostNotFound)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createComment: %w", err)
 	}
 
 	comment.ID = id
@@ -64,16 +58,14 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 	sqlStmt := `SELECT comment_id, user_id, username, message FROM comments WHERE post_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("GetPostComments", err)
-		return err
+		return fmt.Errorf("getPostComments: %w", err)
 	}
 
 	defer query.Close()
 
 	rows, err := query.Query(post.ID)
 	if err != nil {
-		log.Println("GetPostComments", err)
-		return err
+		return fmt.Errorf("getPostComments: %w", err)
 	}
 
 	defer rows.Close()
@@ -82,14 +74,12 @@ func (c *commentQuery) GetPostComments(post *model.Post) error {
 		comment := model.Comment{}
 		err = rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Message)
 		if err != nil {
-			log.Println("GetPostComments", err)
-			return err
+			return fmt.Errorf("getPostComments: %w", err)
 		}
 
 		err = c.getCommentLikesDislikes(&comment)
 		if err != nil {
-			log.Println("getCOmmentLikesDislikes", err)
-			return err
+			return fmt.Errorf("getPostComments: %w", err)
 		}
 
 		post.Comments = append(post.Comments, comment)
@@ -102,8 +92,7 @@ func (c *commentQuery) GetCommentInfo(comment *model.Comment) error {
 	sqlStmt := `SELECT * FROM comments WHERE comment_id=?`
 	err := c.db.QueryRow(sqlStmt, comment.ID).Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Username, &comment.Message)
 	if err != nil {
-		log.Println("Get Comment Info Error", err)
-		return err
+		return fmt.Errorf("getCommentInfo: %w", err)
 	}
 
 	return nil

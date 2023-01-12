@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"log"
+	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -30,33 +29,28 @@ func (p *postQuery) CreatePost(post *model.Post) error {
 	sqlStmt := `INSERT INTO posts (title, content, user_id, username)VALUES(?,?,?,?)`
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createPost: %w", err)
 	}
 
 	defer query.Close()
 
 	result, err := query.Exec(post.Title, post.Content, post.User.ID, post.User.Username)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createPost: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Println("CREATE POST rows affected error:", err)
-		return err
+		return fmt.Errorf("createPost: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		log.Println("create post was failed")
-		return errors.New("create post was failed")
+		return fmt.Errorf("createPost: %w", model.ErrInsertFailed)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createPost: %w", err)
 	}
 
 	post.ID = id
@@ -67,28 +61,24 @@ func (p *postQuery) GetPost(post *model.Post) error {
 	sqlStmt := `SELECT title,content, user_id, username FROM posts WHERE post_id=?`
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("getPost", err)
-		return err
+		return fmt.Errorf("getPost: %w", err)
 	}
 
 	defer query.Close()
 
 	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, &post.User.ID, &post.User.Username)
 	if err != nil {
-		log.Println("getPost", err)
-		return errors.New("getPost: " + err.Error())
+		return fmt.Errorf("getPost: %w", err)
 	}
 
 	err = p.GetPostCategories(post)
 	if err != nil {
-		log.Println("getPost", err)
-		return err
+		return fmt.Errorf("getPost: %w", err)
 	}
 
 	err = p.GetPostLikesDislikes(post)
 	if err != nil {
-		log.Println("getPost", err)
-		return err
+		return fmt.Errorf("getPost: %w", err)
 	}
 
 	return nil
@@ -98,8 +88,7 @@ func (p *postQuery) GetAllPosts() ([]model.Post, error) {
 	sqlStmt := `SELECT * FROM posts`
 	rows, err := p.db.Query(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getAllPosts: %w", err)
 	}
 
 	defer rows.Close()
@@ -109,20 +98,17 @@ func (p *postQuery) GetAllPosts() ([]model.Post, error) {
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
 		if err != nil {
-			log.Println(err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getAllPosts: %w", err)
 		}
 
 		err = p.GetPostCategories(&post)
 		if err != nil {
-			log.Println("Get post Categories", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getAllPosts: %w", err)
 		}
 
 		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
-			log.Println(err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getAllPosts: %w", err)
 		}
 
 		posts = append(posts, post)
@@ -138,8 +124,7 @@ func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, e
 
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("GetPostsOfCategory ERROR:", err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getPostsOfCategory: %w", err)
 	}
 
 	defer query.Close()
@@ -147,8 +132,7 @@ func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, e
 	posts := []model.Post{}
 	rows, err := query.Query(category.ID)
 	if err != nil {
-		log.Println("GetPostsOfCategory ERROR:", err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getPostsOfCategory: %w", err)
 	}
 
 	defer rows.Close()
@@ -157,20 +141,17 @@ func (p *postQuery) GetPostsOfCategory(category model.Category) ([]model.Post, e
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
 		if err != nil {
-			log.Println("GetPostsOfCategory ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getPostsOfCategory: %w", err)
 		}
 
 		err = p.GetPostCategories(&post)
 		if err != nil {
-			log.Println("GetPostsOfCategory ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getPostsOfCategory: %w", err)
 		}
 
 		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
-			log.Println("GetPostsOfCategory ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getPostsOfCategory: %w", err)
 		}
 
 		posts = append(posts, post)
@@ -183,8 +164,7 @@ func (p *postQuery) GetUserPosts(user model.User) ([]model.Post, error) {
 	sqlStmt := `SELECT * FROM posts WHERE user_id=?`
 	rows, err := p.db.Query(sqlStmt, user.ID)
 	if err != nil {
-		log.Println("GetUserPosts ERROR:", err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getUserPosts: %w", err)
 	}
 
 	defer rows.Close()
@@ -194,20 +174,17 @@ func (p *postQuery) GetUserPosts(user model.User) ([]model.Post, error) {
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
 		if err != nil {
-			log.Println("GetUserPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getUserPosts: %w", err)
 		}
 
 		err = p.GetPostCategories(&post)
 		if err != nil {
-			log.Println("GetUserPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getUserPosts: %w", err)
 		}
 
 		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
-			log.Println("GetUserPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getUserPosts: %w", err)
 		}
 
 		posts = append(posts, post)
@@ -222,8 +199,7 @@ func (p *postQuery) GetRatedPosts(user model.User) ([]model.Post, error) {
 	WHERE posts_likes_dislikes.user_id=? AND (posts_likes_dislikes.like=1 OR posts_likes_dislikes.dislike=1)`
 	query, err := p.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("GetRatedPosts ERROR:", err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getRatedPosts: %w", err)
 	}
 
 	defer query.Close()
@@ -231,8 +207,7 @@ func (p *postQuery) GetRatedPosts(user model.User) ([]model.Post, error) {
 	posts := []model.Post{}
 	rows, err := query.Query(user.ID)
 	if err != nil {
-		log.Println("GetRatedPosts ERROR:", err)
-		return []model.Post{}, err
+		return []model.Post{}, fmt.Errorf("getRatedPosts: %w", err)
 	}
 
 	defer rows.Close()
@@ -241,20 +216,17 @@ func (p *postQuery) GetRatedPosts(user model.User) ([]model.Post, error) {
 		post := model.Post{}
 		err = rows.Scan(&post.ID, &post.Title, &post.Content, &post.User.ID, &post.User.Username)
 		if err != nil {
-			log.Println("GetRatedPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getRatedPosts: %w", err)
 		}
 
 		err = p.GetPostCategories(&post)
 		if err != nil {
-			log.Println("GetRatedPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getRatedPosts: %w", err)
 		}
 
 		err = p.GetPostLikesDislikes(&post)
 		if err != nil {
-			log.Println("GetRatedPosts ERROR:", err)
-			return []model.Post{}, err
+			return []model.Post{}, fmt.Errorf("getRatedPosts: %w", err)
 		}
 
 		posts = append(posts, post)

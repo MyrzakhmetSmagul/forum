@@ -3,26 +3,22 @@ package repository
 import (
 	"database/sql"
 	"io"
-	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func NewDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "forum.db")
+	db, err := sql.Open("sqlite3", "forum.db?_foreign_keys=on")
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	err = Migrations(db)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
-	log.Println("database was created successfully")
 	return db, nil
 }
 
@@ -38,21 +34,6 @@ func Migrations(db *sql.DB) error {
 	_, err = db.Exec(string(allTables))
 	if err != nil {
 		return err
-	}
-	return createCategories(db)
-}
-
-func createCategories(db *sql.DB) error {
-	sqlStmt := `INSERT INTO categories (category)
-	SELECT * 
-	FROM (SELECT ? as category) AS tmp 
-	WHERE NOT EXISTS (SELECT category FROM categories WHERE category=?) LIMIT 1`
-	categories := []string{"Adventure stories", "Crime", "Fantasy", "Humour", "Mystery", "Plays", "Other"}
-	for i := 0; i < len(categories); i++ {
-		_, err := db.Exec(sqlStmt, categories[i], categories[i])
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

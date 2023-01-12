@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"log"
+	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -15,33 +14,28 @@ func (c *commentQuery) createReactionToComment(reaction *model.CommentReaction) 
 	WHERE EXISTS (SELECT * FROM posts WHERE comment_id=?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createReactionToComment: %w", err)
 	}
 
 	defer query.Close()
 
 	res, err := query.Exec(reaction.User.ID, reaction.Comment.ID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createReactionToComment: %w", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		log.Println("CreateReactionToComment result.RowsAffected error", err)
-		return err
+		return fmt.Errorf("createReactionToComment: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		log.Println("comment doesn't exist")
-		return errors.New("comment doesn't exist")
+		return fmt.Errorf("createReactionToComment: %w", model.ErrCommentNotFound)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createReactionToComment: %w", err)
 	}
 
 	reaction.ID = id
@@ -52,8 +46,7 @@ func (c *commentQuery) CommentSetLike(reaction *model.CommentReaction) error {
 	var sqlStmt string
 	err := c.getUserReactionToComment(reaction)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetLike: %w", err)
 	}
 
 	if reaction.Like == reaction.Dislike {
@@ -67,15 +60,13 @@ func (c *commentQuery) CommentSetLike(reaction *model.CommentReaction) error {
 		err = c.updateCommentReaction(sqlStmt, c.db, reaction)
 	}
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetLike: %w", err)
 	}
 
 	sqlStmt = `SELECT like, dislike FROM comments_likes_dislikes WHERE Id=?`
 	err = c.db.QueryRow(sqlStmt, reaction.ID).Scan(&reaction.Like, &reaction.Dislike)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetLike: %w", err)
 	}
 	return nil
 }
@@ -84,8 +75,7 @@ func (c *commentQuery) CommentSetDislike(reaction *model.CommentReaction) error 
 	var sqlStmt string
 	err := c.getUserReactionToComment(reaction)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetDislike: %w", err)
 	}
 
 	if reaction.Like == reaction.Dislike {
@@ -100,15 +90,13 @@ func (c *commentQuery) CommentSetDislike(reaction *model.CommentReaction) error 
 	}
 
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetDislike: %w", err)
 	}
 
 	sqlStmt = `SELECT like, dislike FROM comments_likes_dislikes WHERE Id=?`
 	err = c.db.QueryRow(sqlStmt, reaction.ID).Scan(&reaction.Like, &reaction.Dislike)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("commentSetDislike: %w", err)
 	}
 
 	return nil
@@ -117,18 +105,16 @@ func (c *commentQuery) CommentSetDislike(reaction *model.CommentReaction) error 
 func (c *commentQuery) updateCommentReaction(sqlStmt string, db *sql.DB, reaction *model.CommentReaction) error {
 	result, err := db.Exec(sqlStmt, reaction.ID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("updateCommentReaction: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("updateCommentReaction: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("reaction set was failed")
+		return fmt.Errorf("updateCommentReaction: %w", model.ErrUpdateFailed)
 	}
 	return nil
 }
@@ -137,8 +123,7 @@ func (c *commentQuery) getUserReactionToComment(reaction *model.CommentReaction)
 	sqlStmt := `SELECT id, like, dislike FROM comments_likes_dislikes WHERE comment_id=? and user_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("getUserReactionToComment: %w", err)
 	}
 
 	defer query.Close()
@@ -149,8 +134,7 @@ func (c *commentQuery) getUserReactionToComment(reaction *model.CommentReaction)
 			return c.createReactionToComment(reaction)
 		}
 
-		log.Println(err)
-		return err
+		return fmt.Errorf("getUserReactionToComment: %w", err)
 	}
 	return nil
 }
@@ -159,16 +143,14 @@ func (c *commentQuery) getCommentLikesDislikes(comment *model.Comment) error {
 	sqlStmt := `SELECT COALESCE(SUM(like), 0), COALESCE(SUM(dislike), 0) FROM comments_likes_dislikes WHERE comment_id=?`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("getCommentLikesDislikes: %w", err)
 	}
 
 	defer query.Close()
 
 	err = query.QueryRow(comment.ID).Scan(&comment.Like, &comment.Dislike)
 	if err != nil {
-		log.Println("getCommentLikesDislikes", err)
-		return err
+		return fmt.Errorf("getCommentLikesDislikes: %w", err)
 	}
 
 	return nil

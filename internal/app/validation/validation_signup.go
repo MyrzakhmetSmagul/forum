@@ -1,36 +1,33 @@
 package validation
 
 import (
-	"errors"
 	"regexp"
 	"unicode"
-)
 
-var (
-	ErrMessageValid = errors.New("Введите данные корректно")
+	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
 func ValidationFormSignUp(uname, umail, psw, psw2 string) error {
 	if uname == "" || umail == "" || psw == "" || psw2 == "" {
-		return ErrMessageValid
+		return model.ErrMessageValid
 	}
 	if psw != psw2 {
-		return ErrMessageValid
+		return model.ErrMessageValid
 	}
 	if !checkPatternName(uname) {
-		return ErrMessageValid
+		return model.ErrMessageValid
 	}
 	if !checkPatternEmail(umail) {
-		return ErrMessageValid
+		return model.ErrMessageValid
 	}
 	if !isValidPassword(psw) {
-		return ErrMessageValid
+		return model.ErrMessageValid
 	}
 	return nil
 }
 
 func checkPatternName(uname string) bool {
-	var re = regexp.MustCompile("^[a-zA-Z0-9]+$")
+	re := regexp.MustCompile("^[a-zA-Z0-9]+$")
 	if re.MatchString(uname) {
 		return true
 	}
@@ -47,10 +44,10 @@ func checkPatternEmail(umail string) bool {
 
 func isValidPassword(psw string) bool {
 	var (
-		hasMinLen = false
-		hasUpper  = false
-		hasLower  = false
-		hasNumber = false
+		hasMinLen bool
+		hasUpper  bool
+		hasLower  bool
+		hasNumber bool
 	)
 	if len(psw) >= 7 {
 		hasMinLen = true

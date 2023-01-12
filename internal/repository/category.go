@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -15,27 +15,26 @@ func (c *postQuery) GetPostCategories(post *model.Post) error {
 
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("getPostCategories: %w", err)
 	}
 
 	defer query.Close()
 
 	rows, err := query.Query(post.ID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("getPostCategories: %w", err)
 	}
 
 	defer rows.Close()
 
 	for rows.Next() {
 		var category model.Category
+
 		err = rows.Scan(&category.ID, &category.Category)
 		if err != nil {
-			log.Println("Get Post Category err", err)
-			return err
+			return fmt.Errorf("getPostCategories: %w", err)
 		}
+
 		post.Categories = append(post.Categories, category)
 	}
 
@@ -46,8 +45,7 @@ func (c *postQuery) SetPostCategory(post *model.Post) error {
 	sqlStmt := `INSERT INTO post_categories(post_id, category_id) VALUES(?,?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("setPostCategory: %w", err)
 	}
 
 	defer query.Close()
@@ -55,8 +53,7 @@ func (c *postQuery) SetPostCategory(post *model.Post) error {
 	for i := 0; i < len(post.Categories); i++ {
 		_, err = query.Exec(post.ID, post.Categories[i].ID)
 		if err != nil {
-			log.Printf("can't set post categories,\nPost_id = %d, category = %s, number = %d\n ERROR: %s", post.ID, post.Categories[i].Category, i, err.Error())
-			return err
+			return fmt.Errorf("setPostCategory: %w", err)
 		}
 	}
 
@@ -67,22 +64,19 @@ func (c *postQuery) CreateCategory(category *model.Category) error {
 	sqlStmt := `INSERT INTO categories(category)VALUES(?)`
 	query, err := c.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createCategory: %w", err)
 	}
 
 	defer query.Close()
 
 	res, err := query.Exec(category.ID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createCategory: %w", err)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createCategory: %w", err)
 	}
 
 	category.ID = id
@@ -93,8 +87,7 @@ func (c *postQuery) GetAllCategory() ([]model.Category, error) {
 	sqlStmt := `SELECT * FROM categories`
 	rows, err := c.db.Query(sqlStmt)
 	if err != nil {
-		log.Println("GetAllCategory", err)
-		return []model.Category{}, err
+		return []model.Category{}, fmt.Errorf("getAllCategory: %w", err)
 	}
 
 	defer rows.Close()
@@ -104,8 +97,7 @@ func (c *postQuery) GetAllCategory() ([]model.Category, error) {
 		category := model.Category{}
 		err = rows.Scan(&category.ID, &category.Category)
 		if err != nil {
-			log.Println("GetAllCategory", err)
-			return []model.Category{}, err
+			return []model.Category{}, fmt.Errorf("getAllCategory: %w", err)
 		}
 
 		categories = append(categories, category)

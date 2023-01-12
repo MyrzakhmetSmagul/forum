@@ -10,17 +10,17 @@ import (
 
 func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	commentID, err := s.getID(r)
 	if err != nil {
 		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -28,18 +28,18 @@ func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, sess
 	err = s.postService.CommentSetLike(&reaction)
 	if err != nil {
 		if err.Error() == "comment doesn't exist" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
 		log.Println("comment like was failed", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	err = s.postService.GetCommentInfo(&reaction.Comment)
 	if err != nil {
 		log.Println("Get comment info from comment Like Error", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -48,17 +48,17 @@ func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, sess
 
 func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	commentID, err := s.getID(r)
 	if err != nil {
 		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -66,18 +66,18 @@ func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, s
 	err = s.postService.CommentSetDislike(&reaction)
 	if err != nil {
 		if err.Error() == "comment doesn't exist" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
 		log.Println("comment dislike was failed", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	err = s.postService.GetCommentInfo(&reaction.Comment)
 	if err != nil {
 		log.Println("Get comment info from comment Dislike Error", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 

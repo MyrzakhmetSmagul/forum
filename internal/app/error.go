@@ -7,7 +7,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus model.Error) {
+func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus *model.ErrorWeb) {
 	t, err := template.ParseFiles("./templates/html/error.html")
 	if err != nil {
 		http.Error(w, errorStatus.StatusText, errorStatus.StatusCode)

@@ -65,3 +65,38 @@ CREATE TABLE IF NOT EXISTS comments_likes_dislikes (
 		dislike INTEGER NOT NULL,
 		FOREIGN KEY (comment_id) REFERENCES comments (comment_id) ON DELETE CASCADE
 );
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Adventure stories' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Adventure stories') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Crime' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Crime') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Fantasy' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Fantasy') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Humour' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Humour') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Mystery' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Mystery') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Plays' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Plays') LIMIT 1;
+
+INSERT INTO categories (category)
+	SELECT * 
+	FROM (SELECT 'Other' as category) AS tmp 
+	WHERE NOT EXISTS (SELECT category FROM categories WHERE category='Other') LIMIT 1;

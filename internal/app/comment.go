@@ -9,22 +9,22 @@ import (
 
 func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodPost {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	postID, err := s.getID(r)
 	if err != nil {
 		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	if r.ParseForm() != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadGateway))
 		return
 	}
 
@@ -32,10 +32,10 @@ func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, se
 	err = s.postService.CreateComment(&comment)
 	if err != nil {
 		if err.Error() == "post doesn't exist" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 

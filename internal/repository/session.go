@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"log"
+	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -23,22 +22,19 @@ func (s *sessionQuery) CreateSession(session *model.Session) error {
 	sqlStmt := `INSERT INTO sessions(user_id, token, expiry) VALUES(?,?,?)`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createSession: %w", err)
 	}
 
 	defer query.Close()
 
 	result, err := query.Exec(session.User.ID, session.Token, session.Expiry)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createSession: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("createSession: %w", err)
 	}
 
 	session.ID = id
@@ -49,27 +45,23 @@ func (s *sessionQuery) DeleteSession(session *model.Session) error {
 	sqlStmt := `DELETE FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("DeleteSession ERROR", err)
-		return err
+		return fmt.Errorf("deleteSession: %w", err)
 	}
 
 	defer query.Close()
 
 	result, err := query.Exec(session.Token)
 	if err != nil {
-		log.Println("DeleteSession ERROR", err)
-		return err
+		return fmt.Errorf("deleteSession: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Println("DeleteSession ERROR", err)
-		return err
+		return fmt.Errorf("deleteSession: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		log.Println("delete session was failed")
-		return errors.New("delete session was failed")
+		return model.ErrDeleteFromDBFailed
 	}
 
 	return nil
@@ -79,16 +71,14 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 	sqlStmt := `SELECT session_id, user_id, expiry FROM sessions WHERE token=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("sessionQuery.GetSession", err)
-		return err
+		return fmt.Errorf("getSession: %w", err)
 	}
 
 	defer query.Close()
 
 	err = query.QueryRow(session.Token).Scan(&session.ID, &session.User.ID, &session.Expiry)
 	if err != nil {
-		log.Println("sessionQuery.GetSession", err)
-		return err
+		return fmt.Errorf("getSession: %w", err)
 	}
 
 	return nil
@@ -98,16 +88,14 @@ func (s *sessionQuery) GetSessionByUserID(session *model.Session) error {
 	sqlStmt := `SELECT session_id, token, expiry FROM sessions WHERE user_id=?`
 	query, err := s.db.Prepare(sqlStmt)
 	if err != nil {
-		log.Println("sessionQuery.GetSessionByUserID", err)
-		return err
+		return fmt.Errorf("getSessionByUserID: %w", err)
 	}
 
 	defer query.Close()
 
 	err = query.QueryRow(session.User.ID).Scan(&session.ID, &session.Token, &session.Expiry)
 	if err != nil {
-		log.Println("sessionQuery.GetSessionByUserID", err)
-		return err
+		return fmt.Errorf("getSessionByUserID: %w", err)
 	}
 
 	return nil

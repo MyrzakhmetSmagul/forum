@@ -3,26 +3,26 @@ package validation
 import (
 	"regexp"
 	"unicode"
+
+	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func ValidationFormSignIn(umail, psw string) error {
-	if umail == "" || psw == "" {
-		return ErrMessageValid
+func ValidationFormSignIn(email, psw string) error {
+	if email == "" || psw == "" {
+		return model.ErrMessageValid
 	}
-	if !checkPatternEmailForSignIn(umail) {
-		return ErrMessageValid
-
+	if !checkPatternEmailForSignIn(email) {
+		return model.ErrMessageValid
 	}
 	if !isValidPasswordForSignIn(psw) {
-		return ErrMessageValid
-
+		return model.ErrMessageValid
 	}
 	return nil
 }
 
-func checkPatternEmailForSignIn(umail string) bool {
+func checkPatternEmailForSignIn(email string) bool {
 	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if re.MatchString(umail) {
+	if re.MatchString(email) {
 		return true
 	}
 	return false
@@ -30,10 +30,10 @@ func checkPatternEmailForSignIn(umail string) bool {
 
 func isValidPasswordForSignIn(psw string) bool {
 	var (
-		hasMinLen = false
-		hasUpper  = false
-		hasLower  = false
-		hasNumber = false
+		hasMinLen bool
+		hasUpper  bool
+		hasLower  bool
+		hasNumber bool
 	)
 	if len(psw) >= 7 {
 		hasMinLen = true

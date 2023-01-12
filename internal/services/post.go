@@ -1,8 +1,6 @@
 package services
 
 import (
-	"log"
-
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 	"github.com/MyrzakhmetSmagul/forum/internal/repository"
 )
@@ -43,7 +41,6 @@ func (p *postService) CreatePost(post *model.Post) error {
 func (p *postService) GetPost(post *model.Post) error {
 	err := p.PostQuery.GetPost(post)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 

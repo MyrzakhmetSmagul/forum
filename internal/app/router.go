@@ -1,9 +1,13 @@
 package app
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 )
+
+var ErrServer = errors.New("server fallen")
 
 func (s *ServiceServer) Run() error {
 	mux := http.NewServeMux()
@@ -22,15 +26,16 @@ func (s *ServiceServer) Run() error {
 	mux.HandleFunc("/category", s.Category)
 	mux.HandleFunc("/createdPosts", s.authMiddleware(s.CreatedPosts))
 	mux.HandleFunc("/ratedPosts", s.authMiddleware(s.RatedPosts))
+
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
 	log.Printf("server started at http://localhost%s", server.Addr)
+
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Println("error when starting the server", err)
-		return err
+		return fmt.Errorf("server.listenAndServe: %w", err)
 	}
 	return nil
 }

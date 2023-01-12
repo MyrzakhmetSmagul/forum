@@ -1,40 +1,40 @@
 package app
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
 func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	if r.URL.Path != "/" {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusNotFound, StatusText: http.StatusText(http.StatusNotFound)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusNotFound))
 		return
 	}
 
 	t, err := template.ParseFiles("./templates/html/unauth-index.html")
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	categories, err := s.postService.GetAllCategory()
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	posts, err := s.postService.GetAllPosts()
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -43,71 +43,54 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 	err = t.ExecuteTemplate(w, "index", data)
 	if err != nil {
 		log.Println(err)
-
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 }
 
 func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	if r.URL.Path != "/" {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusNotFound, StatusText: http.StatusText(http.StatusNotFound)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusNotFound))
 		return
 	}
 
-	cookie, err := r.Cookie("authToken")
-	if err != nil {
-		if err == http.ErrNoCookie {
+	if _, err := s.getSession(r); err != nil {
+		if errors.Is(err, model.ErrUserNotFound) || errors.Is(err, model.ErrUserExists) {
 			s.IndexWithoutSession(w, r)
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadGateway, StatusText: http.StatusText(http.StatusBadGateway)})
-		return
-	}
+		log.Println("ERROR:\nIndexWithoutSession:", err)
 
-	session := model.Session{Token: cookie.Value}
-	err = s.sessionService.GetSession(&session)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			s.IndexWithoutSession(w, r)
-			return
-		}
-
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-
-	if session.Expiry.Before(time.Now()) {
-		err = s.sessionService.DeleteSession(&session)
-		if err != nil {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
-			return
-		}
-
-		s.IndexWithoutSession(w, r)
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	t, err := template.ParseFiles("./templates/html/index.html")
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	categories, err := s.postService.GetAllCategory()
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	posts, err := s.postService.GetAllPosts()
 	if err != nil {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -115,9 +98,9 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 
 	err = t.ExecuteTemplate(w, "index", data)
 	if err != nil {
-		log.Println(err)
+		log.Println("ERROR:\nIndexWithoutSession:", err)
 
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 }

@@ -10,17 +10,17 @@ import (
 
 func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	postID, err := s.getID(r)
 	if err != nil {
 		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -28,11 +28,11 @@ func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session
 	err = s.postService.PostLike(&model.PostReaction{Post: post, User: session.User})
 	if err != nil {
 		if err.Error() == "post doesn't exist" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
 		log.Println("Post like was failed", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -41,17 +41,17 @@ func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session
 
 func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, session model.Session) {
 	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusMethodNotAllowed, StatusText: http.StatusText(http.StatusMethodNotAllowed)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
 	postID, err := s.getID(r)
 	if err != nil {
 		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -59,11 +59,11 @@ func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, sess
 	err = s.postService.PostDislike(&model.PostReaction{Post: post, User: session.User})
 	if err != nil {
 		if err.Error() == "post doesn't exist" {
-			s.ErrorHandler(w, model.Error{StatusCode: http.StatusBadRequest, StatusText: http.StatusText(http.StatusBadRequest)})
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
 		log.Println("Post like was failed", err)
-		s.ErrorHandler(w, model.Error{StatusCode: http.StatusInternalServerError, StatusText: http.StatusText(http.StatusInternalServerError)})
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
