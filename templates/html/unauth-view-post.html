@@ -28,12 +28,14 @@
             <div class="post-likes">Likes: {{.Like}}</div>
             <div class="post-dislikes">Dislikes: {{.Dislike}}</div>
         </div>
-        <div class="comment-container">
+        <div class="comments-container">
             {{range .Comments}}
-                <div class="comment-author">{{.Username}}</div>
-                <div class="comment-content">{{.Message}}</div>
-                <div class="comment-likes">Likes: {{.Like}}</div>
-                <div class="comment-dislikes">Dislikes: {{.Dislike}}</div>
+                <div class="comment-container">
+                    <div class="comment-author">{{.Username}}</div>
+                    <div class="comment-content">{{.Message}}</div>
+                    <div class="comment-likes">Likes: {{.Like}}</div>
+                    <div class="comment-dislikes">Dislikes: {{.Dislike}}</div>
+                </div>
             {{end}}
         </div>
     </div>

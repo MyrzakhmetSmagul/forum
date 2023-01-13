@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -92,6 +93,9 @@ func (c *commentQuery) GetCommentInfo(comment *model.Comment) error {
 	sqlStmt := `SELECT * FROM comments WHERE comment_id=?`
 	err := c.db.QueryRow(sqlStmt, comment.ID).Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Username, &comment.Message)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = model.ErrCommentNotFound
+		}
 		return fmt.Errorf("getCommentInfo: %w", err)
 	}
 

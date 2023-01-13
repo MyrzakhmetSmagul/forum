@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -135,7 +136,7 @@ func (pr *postQuery) getUserReactionToPost(reaction *model.PostReaction) error {
 
 	err = query.QueryRow(reaction.Post.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+		if errors.Is(err, sql.ErrNoRows) {
 			return pr.createReactionToPost(reaction)
 		}
 

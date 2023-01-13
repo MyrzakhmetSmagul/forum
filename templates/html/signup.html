@@ -10,6 +10,7 @@
   <a href="/">Home</a>
   <div class="login-box">
     <h2>Sign up</h2>
+    <p class="message">{{.}}</p>
     <form action="/signUp" method="post">
         <label for="username">Username</label>
         <input type="text" name="username" id="username" maxlength="18" minlength="2" pattern="^[a-zA-Z\d]+$" required />

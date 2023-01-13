@@ -1,11 +1,10 @@
 package app
 
 import (
-	"fmt"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -21,20 +20,24 @@ func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session 
 func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("./templates/html/create-post.html")
 	if err != nil {
+		log.Println("ERROR:\ngetNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	allCategories, err := s.postService.GetAllCategory()
+	allCategories, err := s.postService.GetAllCategories()
 	if err != nil {
-		log.Println("get all categories error", err)
+		log.Println("ERROR:\ngetNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	err = t.ExecuteTemplate(w, "create-post", allCategories)
 	if err != nil {
-		log.Println("template error")
+		log.Println("ERROR:\ngetNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
@@ -46,7 +49,9 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	if r.ParseForm() != nil {
+	if err := r.ParseForm(); err != nil {
+		log.Println("ERROR:\npostNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadGateway))
 		return
 	}
@@ -54,15 +59,16 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 	post := model.Post{User: *user, Title: r.PostFormValue("title"), Content: r.PostFormValue("content")}
 
 	categories := r.Form["categories"]
-	allCategories, err := s.postService.GetAllCategory()
+	allCategories, err := s.postService.GetAllCategories()
 	if err != nil {
-		log.Println("get all categories error", err)
+		log.Println("ERROR:\npostNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	status := false
 	for i := 0; i < len(categories); i++ {
+		status := false
 		for j := 0; j < len(allCategories); j++ {
 			if categories[i] == allCategories[j].Category {
 				post.Categories = append(post.Categories, allCategories[j])
@@ -70,16 +76,19 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 				break
 			}
 		}
-	}
 
-	if !status {
-		log.Println("error create post without categories")
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-		return
+		if !status {
+			log.Printf("error create post without categories or not exists category: '%s'", categories[i])
+
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
+			return
+		}
 	}
 
 	err = s.postService.CreatePost(&post)
 	if err != nil {
+		log.Println("ERROR:\npostNewPost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
@@ -87,38 +96,41 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session model.Session) {
+func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
 		return
 	}
 
-	postID, err := s.getID(r)
+	_, err := s.getSession(r)
 	if err != nil {
-		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
+		if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrUserNotFound) {
+			s.PostUnauth(w, r)
 			return
 		}
+		log.Println("ERROR:\npost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	post := model.Post{ID: int64(postID)}
-	err = s.postService.GetPost(&post)
+	post, err := s.getPost(r)
 	if err != nil {
-		if err.Error() != "getPost sql: no rows in result set" {
+		log.Println("ERROR:\npost:", err)
+
+		if errors.Is(err, model.ErrPostNotFound) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
 
-		log.Println("error", err)
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	t, err := template.ParseFiles("./templates/html/post.html")
 	if err != nil {
-		log.Println("template parse error", err)
+		log.Println("ERROR:\npost:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
@@ -127,52 +139,26 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request, session mod
 }
 
 func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
-		return
-	}
-
-	postID, err := s.getID(r)
-	if err != nil {
-		if err.Error() == "ID not set" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	post := model.Post{ID: int64(postID)}
-	err = s.postService.GetPost(&post)
-	if err != nil {
-		if err.Error() != "getPost sql: no rows in result set" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-
-		log.Println("error", err)
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
 	t, err := template.ParseFiles("./templates/html/unauth-view-post.html")
+
+	post, err := s.getPost(r)
 	if err != nil {
-		log.Println("template parse error", err)
+		log.Println("ERROR:\npostUnauth:", err)
+
+		if errors.Is(err, model.ErrPostNotFound) {
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
+			return
+		}
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
+		return
+	}
+
+	if err != nil {
+		log.Println("ERROR:\npostUnauth:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	t.ExecuteTemplate(w, "unauth-view-post", post)
-}
-
-func (s *ServiceServer) getID(r *http.Request) (int, error) {
-	if r.URL.Query().Get("ID") == "" {
-		return 0, fmt.Errorf("getID: %w", model.ErrValueNotSet)
-	}
-
-	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
-	if err != nil {
-		return 0, fmt.Errorf("getID: %w", err)
-	}
-	return id, nil
 }

@@ -15,7 +15,7 @@ type PostService interface {
 	PostDislike(reaction *model.PostReaction) error
 	CommentSetLike(reaction *model.CommentReaction) error
 	CommentSetDislike(reaction *model.CommentReaction) error
-	GetAllCategory() ([]model.Category, error)
+	GetAllCategories() ([]model.Category, error)
 	GetPostsOfCategory(category model.Category) ([]model.Post, error)
 	GetCommentInfo(comment *model.Comment) error
 	GetUserPosts(user model.User) ([]model.Post, error)
@@ -75,8 +75,8 @@ func (p *postService) CommentSetDislike(reaction *model.CommentReaction) error {
 	return p.CommentQuery.CommentSetDislike(reaction)
 }
 
-func (p *postService) GetAllCategory() ([]model.Category, error) {
-	return p.PostQuery.GetAllCategory()
+func (p *postService) GetAllCategories() ([]model.Category, error) {
+	return p.PostQuery.GetAllCategories()
 }
 
 func (p *postService) GetPostsOfCategory(category model.Category) ([]model.Post, error) {

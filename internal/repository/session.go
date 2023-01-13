@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -78,6 +79,9 @@ func (s *sessionQuery) GetSession(session *model.Session) error {
 
 	err = query.QueryRow(session.Token).Scan(&session.ID, &session.User.ID, &session.Expiry)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = model.ErrNoSession
+		}
 		return fmt.Errorf("getSession: %w", err)
 	}
 

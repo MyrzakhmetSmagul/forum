@@ -13,6 +13,7 @@ func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus *model.E
 		http.Error(w, errorStatus.StatusText, errorStatus.StatusCode)
 		return
 	}
+
 	w.WriteHeader(errorStatus.StatusCode)
 	t.ExecuteTemplate(w, "error", errorStatus)
 }

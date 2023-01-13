@@ -15,7 +15,7 @@ type PostQuery interface {
 	PostSetDislike(reaction *model.PostReaction) error
 	SetPostCategory(post *model.Post) error
 	CreateCategory(category *model.Category) error
-	GetAllCategory() ([]model.Category, error)
+	GetAllCategories() ([]model.Category, error)
 	GetPostsOfCategory(category model.Category) ([]model.Post, error)
 	GetUserPosts(user model.User) ([]model.Post, error)
 	GetRatedPosts(user model.User) ([]model.Post, error)

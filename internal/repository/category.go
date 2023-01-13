@@ -83,7 +83,7 @@ func (c *postQuery) CreateCategory(category *model.Category) error {
 	return nil
 }
 
-func (c *postQuery) GetAllCategory() ([]model.Category, error) {
+func (c *postQuery) GetAllCategories() ([]model.Category, error) {
 	sqlStmt := `SELECT * FROM categories`
 	rows, err := c.db.Query(sqlStmt)
 	if err != nil {

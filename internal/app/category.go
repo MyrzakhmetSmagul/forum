@@ -1,9 +1,10 @@
 package app
 
 import (
+	"errors"
 	"html/template"
+	"log"
 	"net/http"
-	"time"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
@@ -20,30 +21,18 @@ func (s *ServiceServer) UnauthCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := s.getID(r)
+	data, err := s.getPostsOfCategory(r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\nUnauthCategory:", err)
+		if errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	category := model.Category{ID: int64(id)}
-	posts, err := s.postService.GetPostsOfCategory(category)
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	categories, err := s.postService.GetAllCategory()
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	data := model.Data{Categories: categories, Posts: posts}
 	t.ExecuteTemplate(w, "index", data)
 }
 
@@ -53,68 +42,37 @@ func (s *ServiceServer) Category(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("authToken")
+	_, err := s.getSession(r)
 	if err != nil {
-		if err == http.ErrNoCookie {
+		if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrUserNotFound) {
 			s.UnauthCategory(w, r)
 			return
 		}
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadGateway))
-		return
-	}
-
-	session := model.Session{Token: cookie.Value}
-	err = s.sessionService.GetSession(&session)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			s.UnauthCategory(w, r)
-			return
-		}
+		log.Println("ERROR:\nCategory:", err)
 
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	if session.Expiry.Before(time.Now()) {
-		err = s.sessionService.DeleteSession(&session)
-		if err != nil {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-			return
-		}
-
-		s.UnauthCategory(w, r)
 		return
 	}
 
 	t, err := template.ParseFiles("./templates/html/index.html")
 	if err != nil {
+		log.Println("ERROR:\nCategory:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	id, err := s.getID(r)
+	data, err := s.getPostsOfCategory(r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\nCategory:", err)
+		if errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	category := model.Category{ID: int64(id)}
-	posts, err := s.postService.GetPostsOfCategory(category)
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	categories, err := s.postService.GetAllCategory()
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	data := model.Data{Categories: categories, Posts: posts}
 	t.ExecuteTemplate(w, "index", data)
 }

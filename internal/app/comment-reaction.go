@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,9 +15,11 @@ func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, sess
 		return
 	}
 
-	commentID, err := s.getID(r)
+	postID, err := s.setCommentReaction(session.User, s.postService.CommentSetLike, r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\nCommentLike:", err)
+
+		if errors.Is(err, model.ErrCommentNotFound) || errors.Is(err, model.ErrValueNotSet) || errors.Is(err, model.ErrPostNotFound) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
@@ -24,26 +27,7 @@ func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, sess
 		return
 	}
 
-	reaction := model.CommentReaction{Comment: model.Comment{ID: int64(commentID)}, User: session.User}
-	err = s.postService.CommentSetLike(&reaction)
-	if err != nil {
-		if err.Error() == "comment doesn't exist" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		log.Println("comment like was failed", err)
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	err = s.postService.GetCommentInfo(&reaction.Comment)
-	if err != nil {
-		log.Println("Get comment info from comment Like Error", err)
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	http.Redirect(w, r, "/post?ID="+strconv.Itoa(int(reaction.Comment.PostID)), http.StatusFound)
+	http.Redirect(w, r, "/post?ID="+strconv.Itoa(int(postID)), http.StatusFound)
 }
 
 func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, session model.Session) {
@@ -52,9 +36,11 @@ func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, s
 		return
 	}
 
-	commentID, err := s.getID(r)
+	postID, err := s.setCommentReaction(session.User, s.postService.CommentSetDislike, r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\nCommentDislike:", err)
+
+		if errors.Is(err, model.ErrCommentNotFound) || errors.Is(err, model.ErrValueNotSet) || errors.Is(err, model.ErrPostNotFound) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
@@ -62,24 +48,5 @@ func (s *ServiceServer) CommentDislike(w http.ResponseWriter, r *http.Request, s
 		return
 	}
 
-	reaction := model.CommentReaction{Comment: model.Comment{ID: int64(commentID)}, User: session.User}
-	err = s.postService.CommentSetDislike(&reaction)
-	if err != nil {
-		if err.Error() == "comment doesn't exist" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		log.Println("comment dislike was failed", err)
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	err = s.postService.GetCommentInfo(&reaction.Comment)
-	if err != nil {
-		log.Println("Get comment info from comment Dislike Error", err)
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	http.Redirect(w, r, "/post?ID="+strconv.Itoa(int(reaction.Comment.PostID)), http.StatusFound)
+	http.Redirect(w, r, "/post?ID="+strconv.Itoa(int(postID)), http.StatusFound)
 }

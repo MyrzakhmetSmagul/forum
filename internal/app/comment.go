@@ -1,6 +1,8 @@
 package app
 
 import (
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -15,15 +17,20 @@ func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, se
 
 	postID, err := s.getID(r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:CreateComment:", err)
+
+		if errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
 	if r.ParseForm() != nil {
+		log.Println("ERROR:CreateComment:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadGateway))
 		return
 	}
@@ -31,10 +38,12 @@ func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, se
 	comment := model.Comment{PostID: int64(postID), UserID: session.User.ID, Username: session.User.Username, Message: r.PostFormValue("comment")}
 	err = s.postService.CreateComment(&comment)
 	if err != nil {
-		if err.Error() == "post doesn't exist" {
+		log.Println("ERROR:CreateComment:", err)
+		if errors.Is(err, model.ErrPostNotFound) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}

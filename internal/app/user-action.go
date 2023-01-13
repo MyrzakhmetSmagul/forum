@@ -27,7 +27,7 @@ func (s *ServiceServer) CreatedPosts(w http.ResponseWriter, r *http.Request, ses
 		return
 	}
 
-	categories, err := s.postService.GetAllCategory()
+	categories, err := s.postService.GetAllCategories()
 	if err != nil {
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
@@ -62,7 +62,7 @@ func (s *ServiceServer) RatedPosts(w http.ResponseWriter, r *http.Request, sessi
 		return
 	}
 
-	categories, err := s.postService.GetAllCategory()
+	categories, err := s.postService.GetAllCategories()
 	if err != nil {
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return

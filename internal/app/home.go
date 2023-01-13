@@ -10,39 +10,26 @@ import (
 )
 
 func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
-		return
-	}
-
-	if r.URL.Path != "/" {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusNotFound))
-		return
-	}
-
 	t, err := template.ParseFiles("./templates/html/unauth-index.html")
 	if err != nil {
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	categories, err := s.postService.GetAllCategory()
+	data, err := s.getAllPosts(r)
 	if err != nil {
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
-
-	posts, err := s.postService.GetAllPosts()
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	data := model.Data{Categories: categories, Posts: posts}
 
 	err = t.ExecuteTemplate(w, "index", data)
 	if err != nil {
-		log.Println(err)
+		log.Println("ERROR:\nIndexWithoutSession:", err)
+
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
@@ -60,11 +47,11 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 	}
 
 	if _, err := s.getSession(r); err != nil {
-		if errors.Is(err, model.ErrUserNotFound) || errors.Is(err, model.ErrUserExists) {
+		if errors.Is(err, model.ErrUserNotFound) || errors.Is(err, model.ErrNoSession) {
 			s.IndexWithoutSession(w, r)
 			return
 		}
-		log.Println("ERROR:\nIndexWithoutSession:", err)
+		log.Println("ERROR:\nIndexWithSession:", err)
 
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
@@ -72,33 +59,23 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 
 	t, err := template.ParseFiles("./templates/html/index.html")
 	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
+		log.Println("ERROR:\nIndexWithSession:", err)
 
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
-	categories, err := s.postService.GetAllCategory()
+	data, err := s.getAllPosts(r)
 	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
+		log.Println("ERROR:\nIndexWithSession:", err)
 
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
-
-	posts, err := s.postService.GetAllPosts()
-	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	data := model.Data{Categories: categories, Posts: posts}
 
 	err = t.ExecuteTemplate(w, "index", data)
 	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
+		log.Println("ERROR:\nIndexWithSession:", err)
 
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return

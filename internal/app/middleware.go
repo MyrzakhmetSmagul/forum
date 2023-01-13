@@ -13,11 +13,7 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 		session, err := s.getSession(r)
 		if err != nil {
 			if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrNoSession) {
-				if r.URL.Path == "/post" {
-					s.PostUnauth(w, r)
-				} else {
-					s.ErrorHandler(w, model.NewErrorWeb(http.StatusUnauthorized))
-				}
+				s.ErrorHandler(w, model.NewErrorWeb(http.StatusUnauthorized))
 				return
 			}
 			log.Println("authMiddleware:", err)

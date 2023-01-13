@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,24 +15,13 @@ func (s *ServiceServer) PostLike(w http.ResponseWriter, r *http.Request, session
 		return
 	}
 
-	postID, err := s.getID(r)
+	postID, err := s.setPostReaction(session.User, s.postService.PostLike, r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\npostLike:", err)
+		if errors.Is(err, model.ErrPostNotFound) || errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	post := model.Post{ID: int64(postID)}
-	err = s.postService.PostLike(&model.PostReaction{Post: post, User: session.User})
-	if err != nil {
-		if err.Error() == "post doesn't exist" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		log.Println("Post like was failed", err)
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
@@ -45,24 +35,14 @@ func (s *ServiceServer) PostDislike(w http.ResponseWriter, r *http.Request, sess
 		return
 	}
 
-	postID, err := s.getID(r)
+	postID, err := s.setPostReaction(session.User, s.postService.PostDislike, r)
 	if err != nil {
-		if err.Error() == "ID not set" {
+		log.Println("ERROR:\npostDislike:", err)
+		if errors.Is(err, model.ErrPostNotFound) || errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
 
-	post := model.Post{ID: int64(postID)}
-	err = s.postService.PostDislike(&model.PostReaction{Post: post, User: session.User})
-	if err != nil {
-		if err.Error() == "post doesn't exist" {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		log.Println("Post like was failed", err)
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
