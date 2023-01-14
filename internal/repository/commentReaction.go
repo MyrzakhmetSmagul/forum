@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -130,7 +131,7 @@ func (c *commentQuery) getUserReactionToComment(reaction *model.CommentReaction)
 
 	err = query.QueryRow(reaction.Comment.ID, reaction.User.ID).Scan(&reaction.ID, &reaction.Like, &reaction.Dislike)
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+		if errors.Is(err, sql.ErrNoRows) {
 			return c.createReactionToComment(reaction)
 		}
 

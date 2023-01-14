@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -57,7 +58,7 @@ func (u *userQuery) UserVerification(user *model.User) error {
 	tempPasswd := user.Password
 	err = query.QueryRow(user.Email).Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
-		if err.Error() == "sql: no rows in result ser" {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = model.ErrUserNotFound
 		}
 		return fmt.Errorf("userVerification: %w", err)
@@ -113,7 +114,7 @@ func (u *userQuery) GetUserInfo(user *model.User) error {
 
 	err = query.QueryRow(user.ID).Scan(&user.Username, &user.Email, &user.Password)
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = model.ErrUserNotFound
 		}
 		return fmt.Errorf("getUserInfo: %w", err)

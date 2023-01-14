@@ -2,6 +2,7 @@ package app
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -15,5 +16,9 @@ func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus *model.E
 	}
 
 	w.WriteHeader(errorStatus.StatusCode)
-	t.ExecuteTemplate(w, "error", errorStatus)
+	if t.ExecuteTemplate(w, "error", errorStatus) != nil {
+		log.Println("ERROR:\nErrorHandler:", err)
+
+		http.Error(w, errorStatus.StatusText, errorStatus.StatusCode)
+	}
 }

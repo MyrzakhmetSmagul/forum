@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -18,14 +17,6 @@ func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session 
 }
 
 func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./templates/html/create-post.html")
-	if err != nil {
-		log.Println("ERROR:\ngetNewPost:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
 	allCategories, err := s.postService.GetAllCategories()
 	if err != nil {
 		log.Println("ERROR:\ngetNewPost:", err)
@@ -34,13 +25,7 @@ func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.ExecuteTemplate(w, "create-post", allCategories)
-	if err != nil {
-		log.Println("ERROR:\ngetNewPost:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
+	s.render(w, "create-post", http.StatusOK, allCategories)
 }
 
 func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user *model.User) {
@@ -127,20 +112,10 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := template.ParseFiles("./templates/html/post.html")
-	if err != nil {
-		log.Println("ERROR:\npost:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	t.ExecuteTemplate(w, "post", post)
+	s.render(w, "post", http.StatusOK, post)
 }
 
 func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./templates/html/unauth-view-post.html")
-
 	post, err := s.getPost(r)
 	if err != nil {
 		log.Println("ERROR:\npostUnauth:", err)
@@ -153,12 +128,5 @@ func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
-		log.Println("ERROR:\npostUnauth:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	t.ExecuteTemplate(w, "unauth-view-post", post)
+	s.render(w, "unauth-view-post", http.StatusOK, post)
 }

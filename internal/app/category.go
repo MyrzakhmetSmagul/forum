@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -12,12 +11,6 @@ import (
 func (s *ServiceServer) UnauthCategory(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusMethodNotAllowed))
-		return
-	}
-
-	t, err := template.ParseFiles("./templates/html/unauth-index.html")
-	if err != nil {
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
 
@@ -33,7 +26,7 @@ func (s *ServiceServer) UnauthCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.ExecuteTemplate(w, "index", data)
+	s.render(w, "unauth-index", http.StatusOK, data)
 }
 
 func (s *ServiceServer) Category(w http.ResponseWriter, r *http.Request) {
@@ -54,14 +47,6 @@ func (s *ServiceServer) Category(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := template.ParseFiles("./templates/html/index.html")
-	if err != nil {
-		log.Println("ERROR:\nCategory:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
 	data, err := s.getPostsOfCategory(r)
 	if err != nil {
 		log.Println("ERROR:\nCategory:", err)
@@ -74,5 +59,5 @@ func (s *ServiceServer) Category(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.ExecuteTemplate(w, "index", data)
+	s.render(w, "index", http.StatusOK, data)
 }

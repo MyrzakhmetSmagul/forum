@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -10,14 +9,6 @@ import (
 )
 
 func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./templates/html/unauth-index.html")
-	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
 	data, err := s.getAllPosts(r)
 	if err != nil {
 		log.Println("ERROR:\nIndexWithoutSession:", err)
@@ -25,14 +16,7 @@ func (s *ServiceServer) IndexWithoutSession(w http.ResponseWriter, r *http.Reque
 		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		return
 	}
-
-	err = t.ExecuteTemplate(w, "index", data)
-	if err != nil {
-		log.Println("ERROR:\nIndexWithoutSession:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
+	s.render(w, "unauth-index", http.StatusOK, data)
 }
 
 func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request) {
@@ -57,14 +41,6 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	t, err := template.ParseFiles("./templates/html/index.html")
-	if err != nil {
-		log.Println("ERROR:\nIndexWithSession:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
 	data, err := s.getAllPosts(r)
 	if err != nil {
 		log.Println("ERROR:\nIndexWithSession:", err)
@@ -73,11 +49,5 @@ func (s *ServiceServer) IndexWithSession(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = t.ExecuteTemplate(w, "index", data)
-	if err != nil {
-		log.Println("ERROR:\nIndexWithSession:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
+	s.render(w, "index", http.StatusOK, data)
 }
