@@ -1,4 +1,5 @@
-{{define "post"}}
+{{ define "post" }}
+{{ $session := .Session}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +12,7 @@
         <a class="home" href="/">Home</a>
         <div class="post-container">
             <div class="post-title">{{.Title}}</div>
-            <div class="post-author">{{.User.Username}}</div>
+            <div class="post-author">Author: {{.User.Username}}</div>
             <div class="dropdown">
                 <button class="dropbtn">  
                     <i>Categories</i>
@@ -22,25 +23,37 @@
                     {{end}}
                 </div>
             </div>
-            <div class="post-content">{{.Content}}</div>
-            <div class="post-likes"><a href="/postLike?ID={{.ID}}">Likes</a> {{.Like}}</div>
-            <div class="post-dislikes"><a href="/postDislike?ID={{.ID}}">Dislikes</a> {{.Dislike}}</div>
+            <pre class="post-content">{{.Content}}</pre>
+            {{if eq $session true}}
+                <div class="post-likes"><a href="/postLike?ID={{.ID}}">Likes</a> {{.Like}}</div>
+                <div class="post-dislikes"><a href="/postDislike?ID={{.ID}}">Dislikes</a> {{.Dislike}}</div>
+            {{else}}
+                <div class="post-likes">Likes: {{.Like}}</div>
+                <div class="post-dislikes">Dislikes: {{.Dislike}}</div>
+            {{end}}
         </div>
         <div class="comments-container">
             {{range .Comments}}
                 <div class="comment-container">
-                    <div class="comment-author">{{.Username}}</div>
-                    <div class="comment-content">{{.Message}}</div>
-                    <div class="comment-likes"><a href="/commentLike?ID={{.ID}}">Likes</a> {{.Like}}</div>
-                    <div class="comment-dislikes"><a href="/commentDislike?ID={{.ID}}">Dislikes</a> {{.Dislike}}</div>
+                    <div class="comment-author">Author: {{.Username}}</div>
+                    <pre class="comment-content">{{.Message}}</pre>
+                    {{if eq $session true}}
+                        <div class="comment-likes"><a href="/commentLike?ID={{.ID}}">Likes</a> {{.Like}}</div>
+                        <div class="comment-dislikes"><a href="/commentDislike?ID={{.ID}}">Dislikes</a> {{.Dislike}}</div>
+                    {{else}}
+                        <div class="comment-likes">Likes: {{.Like}}</div>
+                        <div class="comment-dislikes">Dislikes: {{.Dislike}}</div>
+                    {{end}}
                 </div>
             {{end}}
-            <div class="new-comment-container">
-                <form action="/createComment?ID={{.ID}}" method="POST">
-                    <textarea name="comment" placeholder="Write your comment here..."></textarea>
-                    <button type="submit">Create</button>
-                </form>
-            </div>
+            {{if eq $session true}}
+                <div class="new-comment-container">
+                    <form action="/createComment?ID={{.ID}}" method="POST">
+                        <textarea name="comment" placeholder="Write your comment here..."></textarea>
+                        <button type="submit">Create</button>
+                    </form>
+                </div>
+            {{end}}
         </div>
     </div>
 </body>

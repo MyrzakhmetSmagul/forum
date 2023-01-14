@@ -9,19 +9,19 @@ import (
 
 func ValidationFormSignUp(uname, umail, psw, psw2 string) error {
 	if uname == "" || umail == "" || psw == "" || psw2 == "" {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if psw != psw2 {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if !checkPatternName(uname) {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if !checkPatternEmail(umail) {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if !isValidPassword(psw) {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	return nil
 }

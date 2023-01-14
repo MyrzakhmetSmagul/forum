@@ -24,9 +24,9 @@ func (s *ServiceServer) CreatedPosts(w http.ResponseWriter, r *http.Request, ses
 		return
 	}
 
-	data := model.Data{Categories: categories, Posts: posts}
+	data := model.Data{Categories: categories, Posts: posts, Status: true}
 
-	s.render(w, "index", http.StatusOK, data)
+	s.render(w, "index", data)
 }
 
 func (s *ServiceServer) RatedPosts(w http.ResponseWriter, r *http.Request, session model.Session) {
@@ -47,7 +47,7 @@ func (s *ServiceServer) RatedPosts(w http.ResponseWriter, r *http.Request, sessi
 		return
 	}
 
-	data := model.Data{Categories: categories, Posts: posts}
+	data := model.Data{Categories: categories, Posts: posts, Status: true}
 
-	s.render(w, "index", http.StatusOK, data)
+	s.render(w, "index", data)
 }

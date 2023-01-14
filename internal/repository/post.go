@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
@@ -68,6 +69,9 @@ func (p *postQuery) GetPost(post *model.Post) error {
 
 	err = query.QueryRow(post.ID).Scan(&post.Title, &post.Content, &post.User.ID, &post.User.Username)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = model.ErrPostNotFound
+		}
 		return fmt.Errorf("getPost: %w", err)
 	}
 

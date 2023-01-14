@@ -169,12 +169,17 @@ body {
 .dropdown:hover .dropdown-content {
   display: block;
 }
+
 .post-content {
   text-align: left;
   font-size: 1.4rem;
   line-height: 1.5rem;
   margin-bottom: 1rem;
   cursor:default;
+  background-color: #f2f2f2;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-line;
 }
 
 .post-reactions {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MyrzakhmetSmagul/forum/internal/app/validation"
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
@@ -25,7 +26,7 @@ func (s *ServiceServer) GetNewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.render(w, "create-post", http.StatusOK, allCategories)
+	s.render(w, "create-post", model.Data{Status: true, Categories: allCategories})
 }
 
 func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user *model.User) {
@@ -41,9 +42,8 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	post := model.Post{User: *user, Title: r.PostFormValue("title"), Content: r.PostFormValue("content")}
+	post := model.Post{User: *user}
 
-	categories := r.Form["categories"]
 	allCategories, err := s.postService.GetAllCategories()
 	if err != nil {
 		log.Println("ERROR:\npostNewPost:", err)
@@ -52,22 +52,16 @@ func (s *ServiceServer) PostNewPost(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	for i := 0; i < len(categories); i++ {
-		status := false
-		for j := 0; j < len(allCategories); j++ {
-			if categories[i] == allCategories[j].Category {
-				post.Categories = append(post.Categories, allCategories[j])
-				status = true
-				break
-			}
-		}
+	err = validation.CheckInput(r, &post, allCategories)
+	if err != nil {
+		log.Println("ERROR:\npostNewPost:", err)
 
-		if !status {
-			log.Printf("error create post without categories or not exists category: '%s'", categories[i])
-
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
+		if errors.Is(err, model.ErrMessageInvalid) {
+			s.render(w, "create-post", model.Data{Status: false, Categories: allCategories})
+		} else {
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 		}
+		return
 	}
 
 	err = s.postService.CreatePost(&post)
@@ -87,23 +81,23 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := s.getSession(r)
-	if err != nil {
-		if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrUserNotFound) {
-			s.PostUnauth(w, r)
+	session := true
+
+	if _, err := s.getSession(r); err != nil {
+		if !errors.Is(err, model.ErrNoSession) && !errors.Is(err, model.ErrUserNotFound) {
+			log.Println("ERROR:\npost:", err)
+
+			s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
 			return
 		}
-		log.Println("ERROR:\npost:", err)
-
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
+		session = false
 	}
 
 	post, err := s.getPost(r)
 	if err != nil {
 		log.Println("ERROR:\npost:", err)
 
-		if errors.Is(err, model.ErrPostNotFound) {
+		if errors.Is(err, model.ErrPostNotFound) || errors.Is(err, model.ErrValueNotSet) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
 		}
@@ -112,21 +106,7 @@ func (s *ServiceServer) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.render(w, "post", http.StatusOK, post)
-}
+	data := model.DataPost{Session: session, Post: post}
 
-func (s *ServiceServer) PostUnauth(w http.ResponseWriter, r *http.Request) {
-	post, err := s.getPost(r)
-	if err != nil {
-		log.Println("ERROR:\npostUnauth:", err)
-
-		if errors.Is(err, model.ErrPostNotFound) {
-			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
-			return
-		}
-		s.ErrorHandler(w, model.NewErrorWeb(http.StatusInternalServerError))
-		return
-	}
-
-	s.render(w, "unauth-view-post", http.StatusOK, post)
+	s.render(w, "post", data)
 }

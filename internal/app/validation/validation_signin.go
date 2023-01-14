@@ -9,13 +9,13 @@ import (
 
 func ValidationFormSignIn(email, psw string) error {
 	if email == "" || psw == "" {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if !checkPatternEmailForSignIn(email) {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	if !isValidPasswordForSignIn(psw) {
-		return model.ErrMessageValid
+		return model.ErrMessageInvalid
 	}
 	return nil
 }

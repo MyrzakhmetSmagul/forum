@@ -17,17 +17,22 @@
           {{end}}
         </div>
       </div>
-      <a class="node" href="/createdPosts">Created posts</a>
-      <a class="node" href="/ratedPosts">Rated posts</a>
-      <a class="node" href="/newPost">New post</a>
-      <a class="node" href="/signOut">Sign out</a>
+      {{ if eq .Status true }}
+        <a class="node" href="/createdPosts">Created posts</a>
+        <a class="node" href="/ratedPosts">Rated posts</a>
+        <a class="node" href="/newPost">New post</a>
+        <a class="node" href="/signOut">Sign out</a>
+      {{ else }}
+        <a class="node" href="/signIn">Sign in</a>
+        <a class="node" href="/signUp">Sign up</a>
+      {{end}}
     </div>
     <div class="container">
       <div class="posts">
         {{range .Posts}}
       <div class="post-container">
-        <div class="post-author">Author: {{.User.Username}}</div>
         <h1 class="post-title" onclick="window.location='/post?ID={{.ID}}'">{{.Title}}</h1>
+        <div class="post-author">Author: {{.User.Username}}</div>
         <div class="dropdown">
           <button class="dropbtn">Categories</button>
           <div class="dropdown-content">
@@ -36,9 +41,9 @@
             {{end}}
           </div>
         </div>
-        <p class="post-content">
+        <pre class="post-content">
           {{.Content}}
-        </p>
+        </pre>
         <div class="post-reactions">Like {{.Like}} Disike {{.Dislike}}</div>
       </div>
       {{end}}

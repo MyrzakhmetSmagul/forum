@@ -18,6 +18,11 @@ body {
     margin: 0 auto;
 }
 
+a{
+    text-decoration: none;
+    color:blue;
+}
+
 .home {
     font-size: 1.5rem;
     display: block;
@@ -99,7 +104,12 @@ body {
     font-size: 1.4rem;
     line-height: 1.5rem;
     margin-bottom: 1rem;
-}
+    cursor:default;
+    background-color: #f2f2f2;
+    padding: 1rem;
+    border-radius: 5px;
+    white-space: pre-line;
+  }
 
 .post-likes {
     font-size: 1.2rem;
@@ -118,7 +128,7 @@ body {
 .comment-container {
     background-color: #fff;
     padding: 1rem;
-    margin: 20px;
+    margin: 40px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px 0px #000;
     box-sizing: border-box;
@@ -131,10 +141,16 @@ body {
 }
 
 .comment-content {
+    text-align: left;
     font-size: 1.4rem;
     line-height: 1.5rem;
-    margin-bottom: 0.5rem;
-}
+    margin-bottom: 1rem;
+    cursor:default;
+    background-color: #f2f2f2;
+    padding: 1rem;
+    border-radius: 5px;
+    white-space: pre-line;
+  }
 
 .comment-likes {
     font-size: 1.2rem;
@@ -153,7 +169,7 @@ body {
 .new-comment-container{
     background-color: #fff;
     padding: 1rem;
-    margin: 20px;
+    margin: 40px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px 0px #000;
     box-sizing: border-box;

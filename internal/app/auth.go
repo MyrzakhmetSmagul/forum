@@ -26,7 +26,7 @@ func (s *ServiceServer) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		s.render(w, "signin", http.StatusOK, nil)
+		s.render(w, "signin", nil)
 		return
 	}
 	s.PostSignIn(w, r)
@@ -46,7 +46,7 @@ func (s *ServiceServer) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		s.render(w, "signup", http.StatusOK, nil)
+		s.render(w, "signup", nil)
 		return
 	}
 	s.PostSignUp(w, r)
@@ -68,8 +68,8 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 
 	user := model.User{Email: r.PostFormValue("email"), Password: r.PostFormValue("password")}
 	if err := validation.ValidationFormSignIn(user.Email, user.Password); err != nil {
-		if errors.Is(err, model.ErrMessageValid) {
-			s.render(w, "signin", http.StatusFound, model.ErrMessageValid.Error())
+		if errors.Is(err, model.ErrMessageInvalid) {
+			s.render(w, "signin", model.ErrMessageInvalid.Error())
 			return
 		}
 		log.Println("ERROR:\nSignIn With POST Method: ", err)
@@ -86,7 +86,7 @@ func (s *ServiceServer) PostSignIn(w http.ResponseWriter, r *http.Request) {
 
 		if errors.Is(err, model.ErrUserNotFound) || errors.Is(err, sql.ErrNoRows) || errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			message := "user email or password incorrect"
-			s.render(w, "signin", http.StatusFound, message)
+			s.render(w, "signin", message)
 			return
 		}
 		log.Println("ERROR:\nSignIn with POST Method:", err)
@@ -124,8 +124,8 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 	user := model.User{Username: r.PostFormValue("username"), Email: r.PostFormValue("email"), Password: r.PostFormValue("password"), Password2: r.PostFormValue("password2")}
 	if err := validation.ValidationFormSignUp(user.Username, user.Email, user.Password, user.Password2); err != nil {
 
-		if errors.Is(err, model.ErrMessageValid) {
-			s.render(w, "signup", http.StatusFound, model.ErrMessageValid.Error())
+		if errors.Is(err, model.ErrMessageInvalid) {
+			s.render(w, "signup", model.ErrMessageInvalid.Error())
 			return
 		}
 		log.Println("ERROR:\nSignUp With POST Method: ", err)
@@ -138,7 +138,7 @@ func (s *ServiceServer) PostSignUp(w http.ResponseWriter, r *http.Request) {
 	err := s.authService.SignUp(&user)
 	if err != nil {
 		if errors.Is(err, model.ErrUserExists) {
-			s.render(w, "signup", http.StatusFound, model.ErrUserExists.Error())
+			s.render(w, "signup", model.ErrUserExists.Error())
 			return
 		}
 		log.Println("ERROR:\nSignUp With POST Method: ", err)

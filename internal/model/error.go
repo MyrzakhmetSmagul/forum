@@ -20,7 +20,7 @@ var (
 	ErrInsertFailed       = errors.New("create record was failed")
 	ErrUpdateFailed       = errors.New("update table was failed")
 	ErrDeleteFromDBFailed = errors.New("delete from db was failed")
-	ErrMessageValid       = errors.New("enter the data correctly")
+	ErrMessageInvalid     = errors.New("enter data correctly")
 )
 
 func NewErrorWeb(statusCode int) *ErrorWeb {

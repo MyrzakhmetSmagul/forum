@@ -9,7 +9,7 @@ import (
 	"github.com/MyrzakhmetSmagul/forum/internal/model"
 )
 
-func (s *ServiceServer) render(w http.ResponseWriter, pageName string, statusCode int, data interface{}) {
+func (s *ServiceServer) render(w http.ResponseWriter, pageName string, data interface{}) {
 	path := fmt.Sprintf("./templates/html/%s.html", pageName)
 	t, err := template.ParseFiles(path)
 	if err != nil {
@@ -19,7 +19,6 @@ func (s *ServiceServer) render(w http.ResponseWriter, pageName string, statusCod
 		return
 	}
 
-	w.WriteHeader(statusCode)
 	if t.ExecuteTemplate(w, pageName, data) != nil {
 		log.Println("ERROR:\nrender:", err)
 
