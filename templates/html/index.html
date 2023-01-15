@@ -31,7 +31,7 @@
       <div class="posts">
         {{range .Posts}}
       <div class="post-container">
-        <h1 class="post-title" onclick="window.location='/post?ID={{.ID}}'">{{.Title}}</h1>
+        <pre class="post-title" onclick="window.location='/post?ID={{.ID}}'">{{.Title}}</pre>
         <div class="post-author">Author: {{.User.Username}}</div>
         <div class="dropdown">
           <button class="dropbtn">Categories</button>

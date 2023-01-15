@@ -15,7 +15,7 @@ func CheckInput(r *http.Request, post *model.Post, allCategories []model.Categor
 
 	post.Title = r.PostFormValue("title")
 
-	if temp := strings.Trim(post.Title, " "); temp == "" || len(post.Title) > 255 {
+	if temp := strings.Trim(post.Title, " "); temp == "" || len(post.Title) > 50 {
 		return fmt.Errorf("checkInput: %w", model.ErrMessageInvalid)
 	}
 
