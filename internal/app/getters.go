@@ -56,7 +56,7 @@ func (s *ServiceServer) getID(r *http.Request) (int, error) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get("ID"))
 	if err != nil {
-		return 0, fmt.Errorf("getID: %w", err)
+		return 0, fmt.Errorf("getID: %w", model.ErrValueNotSet)
 	}
 	return id, nil
 }
