@@ -1,4 +1,4 @@
-module github.com/MyrzakhmetSmagul/forum
+module forum
 
 go 1.18
 

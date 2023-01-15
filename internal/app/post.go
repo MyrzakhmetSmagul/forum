@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/app/validation"
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/app/validation"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) NewPost(w http.ResponseWriter, r *http.Request, session model.Session) {

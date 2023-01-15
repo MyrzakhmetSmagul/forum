@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
-	"github.com/MyrzakhmetSmagul/forum/internal/repository"
+	"forum/internal/model"
+	"forum/internal/repository"
 )
 
 type PostService interface {

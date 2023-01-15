@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func CheckInput(r *http.Request, post *model.Post, allCategories []model.Category) error {

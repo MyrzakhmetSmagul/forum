@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) CommentLike(w http.ResponseWriter, r *http.Request, session model.Session) {

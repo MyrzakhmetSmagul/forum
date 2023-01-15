@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Request, model.Session)) http.HandlerFunc {

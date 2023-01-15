@@ -3,7 +3,7 @@ package app
 import (
 	"net/http"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) CreatedPosts(w http.ResponseWriter, r *http.Request, session model.Session) {

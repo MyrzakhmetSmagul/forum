@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
-	"github.com/MyrzakhmetSmagul/forum/internal/repository"
+	"forum/internal/model"
+	"forum/internal/repository"
+
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )

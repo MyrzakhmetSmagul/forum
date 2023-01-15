@@ -1,6 +1,6 @@
 package app
 
-import "github.com/MyrzakhmetSmagul/forum/internal/services"
+import "forum/internal/services"
 
 type ServiceServer struct {
 	authService    services.AuthService

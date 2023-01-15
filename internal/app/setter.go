@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) setPostReaction(user model.User, f func(*model.PostReaction) error, r *http.Request) (int, error) {

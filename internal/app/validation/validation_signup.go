@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"unicode"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func ValidationFormSignUp(uname, umail, psw, psw2 string) error {

@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/app/validation"
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/app/validation"
+	"forum/internal/model"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

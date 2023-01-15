@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (pr *postQuery) PostSetLike(reaction *model.PostReaction) error {

@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (c *postQuery) GetPostCategories(post *model.Post) error {

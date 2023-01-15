@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) getSession(r *http.Request) (model.Session, error) {

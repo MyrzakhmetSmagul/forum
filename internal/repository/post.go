@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 type PostQuery interface {

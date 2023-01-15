@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/app"
-	"github.com/MyrzakhmetSmagul/forum/internal/repository"
-	"github.com/MyrzakhmetSmagul/forum/internal/services"
+	"forum/internal/app"
+	"forum/internal/repository"
+	"forum/internal/services"
 )
 
 func main() {

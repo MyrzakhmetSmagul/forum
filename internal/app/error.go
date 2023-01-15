@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/MyrzakhmetSmagul/forum/internal/model"
+	"forum/internal/model"
 )
 
 func (s *ServiceServer) ErrorHandler(w http.ResponseWriter, errorStatus *model.ErrorWeb) {
