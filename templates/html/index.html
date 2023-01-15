@@ -31,7 +31,7 @@
       <div class="posts">
         {{range .Posts}}
       <div class="post-container">
-        <pre class="post-title" onclick="window.location='/post?ID={{.ID}}'">{{.Title}}</pre>
+        <div class="post-title" onclick="window.location='/post?ID={{.ID}}'">{{.Title}}</div>
         <div class="post-author">Author: {{.User.Username}}</div>
         <div class="dropdown">
           <button class="dropbtn">Categories</button>
@@ -41,9 +41,9 @@
             {{end}}
           </div>
         </div>
-        <pre class="post-content">
+        <div class="post-content">
           {{.Content}}
-        </pre>
+        </div>
         <div class="post-reactions">Like {{.Like}} Disike {{.Dislike}}</div>
       </div>
       {{end}}

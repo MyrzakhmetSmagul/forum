@@ -12,7 +12,7 @@ func (s *ServiceServer) authMiddleware(next func(http.ResponseWriter, *http.Requ
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.getSession(r)
 		if err != nil {
-			if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrNoSession) {
+			if errors.Is(err, model.ErrNoSession) || errors.Is(err, model.ErrUserNotFound) {
 				s.ErrorHandler(w, model.NewErrorWeb(http.StatusUnauthorized))
 				return
 			}

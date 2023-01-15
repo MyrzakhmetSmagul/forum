@@ -183,7 +183,7 @@ body {
   background-color: #f2f2f2;
   padding: 1rem;
   border-radius: 5px;
-  white-space: pre-line;
+  white-space: pre-wrap;
   word-wrap: break-word;
 }
 

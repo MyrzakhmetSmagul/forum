@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"forum/internal/model"
 )
@@ -36,9 +37,17 @@ func (s *ServiceServer) CreateComment(w http.ResponseWriter, r *http.Request, se
 	}
 
 	comment := model.Comment{PostID: int64(postID), UserID: session.User.ID, Username: session.User.Username, Message: r.PostFormValue("comment")}
+	temp := strings.Trim(comment.Message, " ")
+	if temp == "" {
+		log.Println("ERROR:\nCreateComment:", model.ErrMessageInvalid)
+
+		s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
+		return
+	}
+
 	err = s.postService.CreateComment(&comment)
 	if err != nil {
-		log.Println("ERROR:CreateComment:", err)
+		log.Println("ERROR:\nCreateComment:", err)
 		if errors.Is(err, model.ErrPostNotFound) {
 			s.ErrorHandler(w, model.NewErrorWeb(http.StatusBadRequest))
 			return
